@@ -35,3 +35,17 @@ Hosted on Vercel: https://liftlog-gym-tracker-theta.vercel.app
 Built by [Sanjay Philip](https://github.com/SanjayPhilip).
 
 *Every set has a purpose. Every rep leaves a record.*
+
+
+## Workout tools
+
+- Previous sets are matched by exercise name and workout date, including saved plan snapshots. New drafts prefill the previous values; adjust these to your actual performance before saving.
+- Rep targets suggest one more rep at the same load, or considering a load increase once every planned set reaches the top of the range. Timed holds use seconds.
+- Progress includes history filters for workout, exercise and date, expandable session sets and notes, and personal records with dated charts and accessible data tables.
+- Records include heaviest set, most reps, session volume and estimated 1RM (Epley, weighted sets of 1–12 reps). Timed holds are excluded from volume and 1RM.
+
+The restored app retains the deployed Supabase account payload format. No database migration is required.
+
+## Local verification
+
+Serve the repository with `python -m http.server 4173 --bind 127.0.0.1`, then run `python tests/training_browser.py` with Python Playwright and Chromium installed. The test uses fixture cloud responses and never writes to a real account. It checks mobile and desktop layouts, quick logging, saved edits, history, charts, and the save/reload payload contract.
