@@ -80,7 +80,7 @@ function renderHistoryResults(){
     return `<details class="history-session"><summary><strong>${esc(s.date)} · ${esc(p.name)}</strong><span class="muted">${sets.length} logged sets · ${round(volume).toLocaleString()} kg volume</span></summary>${p.items.map(([name,,range],i)=>{
       const rows=(s.sets?.[i]||[]).filter(validTrainingSet);
       return `<div class="exercise"><h3>${esc(name)}</h3>${rows.length?`<ol>${rows.map(r=>`<li>${esc(r.weight)} kg × ${esc(r.reps)} ${/sec/i.test(range)?'sec':'reps'}</li>`).join('')}</ol>`:'<p class="muted">No sets recorded.</p>'}</div>`;
-    }).join('')}${s.notes?`<h3>Session notes</h3><p class="session-notes">${esc(s.notes)}</p>`:''}</details>`;
+    }).join('')}<div class="session-actions"><button type="button" class="btn secondary small" data-session-action="repeat" data-session-id="${esc(s.id)}">Repeat this workout</button><button type="button" class="btn secondary small" data-session-action="edit" data-session-id="${esc(s.id)}">Edit saved workout</button></div>${s.notes?`<h3>Session notes</h3><p class="session-notes">${esc(s.notes)}</p>`:''}</details>`;
   }).join(''):'<p class="empty">'+(state.sessions.length?'No sessions match these filters.':'No workouts yet. Save your first workout to start your history.')+'</p>');
 }
 let performanceExercise='',performanceMetric='weight';
