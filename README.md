@@ -66,3 +66,9 @@ The `db/guarded_sync.sql` database function compares the last acknowledged accou
 Workout and repeated-draft exercises have **Swap exercise** controls. The replacement affects only that session snapshot, clears its entered weights and reps, and leaves the routine unchanged. Other entered sets stay in the workout.
 
 `python tests/sync_browser.py` simulates offline recovery, stale writes, backup recovery, retry and substitutions with mock account data. Database validation also exercised the guarded function under the authenticated role inside a rolled-back transaction.
+
+## Swap days this week
+
+On Home, drag the **⠿ handle** on a schedule card onto another card to swap them directly. You can also select **Swap days**, then drag anywhere on a card or tap two days. Workout and rest days exchange places for the current Monday–Sunday week. Select **Done swapping** to open workouts normally. Assignments sync with your account and survive reloads; next week uses the regular split. Plan changes reset the week's assignments. Swaps leave workout IDs, entered drafts and saved history intact.
+
+Run `python tests/schedule_browser.py` against the local server for drag, tap, keyboard, reload, workout identity and week-reset checks with mocked account responses.

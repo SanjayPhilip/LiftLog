@@ -1,6 +1,6 @@
-const CACHE='liftlog-training-v10';
+const CACHE='liftlog-training-v11';
 const SDK='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js';
-const SHELL=['/','/index.html','/config.js','/manifest.webmanifest','/barbell.svg','/icon.svg','/training.js','/training.css','/sessions.js','/sync.js','/substitutions.js'];
+const SHELL=['/','/index.html','/config.js','/manifest.webmanifest','/barbell.svg','/icon.svg','/training.js','/training.css','/sessions.js','/sync.js','/substitutions.js','/schedule.js'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>Promise.all([cache.addAll(SHELL),cache.add(SDK).catch(()=>{})])).then(()=>self.skipWaiting())));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key.startsWith('liftlog-training-')&&key!==CACHE).map(key=>caches.delete(key)))).then(()=>self.clients.claim())));
 self.addEventListener('fetch',event=>{
