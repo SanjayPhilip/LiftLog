@@ -58,3 +58,11 @@ Serve the repository with `python -m http.server 4173 --bind 127.0.0.1`, then ru
 - Home and Progress show a Monday–Sunday weekly summary: sessions, logged sets, external load volume, records and improved lifts compared with the previous full week. Navigate backward to inspect earlier weeks. Future-dated logs and timed holds do not inflate current-week volume.
 
 Run `python tests/sessions_browser.py` against the same local server for repeat/resume, draft isolation, edit/cancel/conflicts, validation, record recalculation, week boundaries and mobile/desktop checks. These also use fixture cloud responses.
+
+## Offline recovery and exercise swaps
+
+The `db/guarded_sync.sql` database function compares the last acknowledged account payload under a lock before accepting a save. It runs as the caller, respects existing ownership RLS, and is executable only by authenticated users. Apply it before deploying the sync client. Pending edits and their acknowledged baseline are cached per account. Conflicts pause writes; loading the newer cloud version first archives pending edits into a downloadable device recovery backup. A failed load can restore a previously cached account, and reconnect/manual retry attempts a guarded save. Reopen other devices to update their old client before concurrent editing.
+
+Workout and repeated-draft exercises have **Swap exercise** controls. The replacement affects only that session snapshot, clears its entered weights and reps, and leaves the routine unchanged. Other entered sets stay in the workout.
+
+`python tests/sync_browser.py` simulates offline recovery, stale writes, backup recovery, retry and substitutions with mock account data. Database validation also exercised the guarded function under the authenticated role inside a rolled-back transaction.

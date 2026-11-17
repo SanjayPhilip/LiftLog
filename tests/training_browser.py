@@ -5,6 +5,7 @@ from playwright.sync_api import sync_playwright, expect
 
 MOCK = '''window.supabase={createClient(){return {
  auth:{async getSession(){await new Promise(r=>setTimeout(r,100));return {data:{session:{user:{id:'fixture-user'}}}}},onAuthStateChange(){}},
+ async rpc(name,args){window.savedPayload=args.next_payload;return {data:{saved:true},error:null}},
  from(){return {select(){return {eq(){return {async maybeSingle(){return {data:{payload:window.fixture},error:null}}}}}},async upsert(data){window.savedPayload=data.payload;return {error:null}}}}
 }}};'''
 fixture = {
