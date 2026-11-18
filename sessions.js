@@ -47,10 +47,10 @@ function validateSessionSets(sets){
 }
 // New sessions have stable unique IDs, allowing multiple workouts on one day.
 finishWorkout=function(){
-  const d=draft(),error=validateSessionSets(d.sets);
+  const d=draft(),sets=completedWorkoutSets(d.sets),error=validateSessionSets(sets);
   if(error)return alert(error);
   if(!validSessionDate(currentDate))return alert('Choose a valid workout date on or before today.');
-  const entry={...structuredClone(d),id:crypto.randomUUID(),date:currentDate,day:state.day,planSnapshot:structuredClone(PLAN[state.day]),createdAt:new Date().toISOString()};
+  const entry={...structuredClone(d),sets,id:crypto.randomUUID(),date:currentDate,day:state.day,planSnapshot:structuredClone(PLAN[state.day]),createdAt:new Date().toISOString()};
   commitTrainingSession(entry);delete state.drafts[draftKey()];state.day=(state.day+1)%PLAN.length;save();switchTab('progressPage');
 };
 function startRepeatSession(id){
