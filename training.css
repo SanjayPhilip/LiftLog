@@ -5,3 +5,5 @@
 .set-action{grid-column:2 / -1;display:flex;justify-content:flex-end}
 .set-action .btn{min-height:44px;min-width:94px;padding:8px 12px}
 .set-completed{border-inline-start:2px solid var(--accent);padding-inline-start:4px}
+
+.set-action{align-items:center;gap:10px}.studio-set-type{grid-column:2 / -1}
