@@ -25,24 +25,78 @@ function targetAdvice(name,range,setCount) {
   const last=lastExercise(name),bounds=repBounds(range);
   if(!last)return 'First session: choose a manageable load and record your actual sets.';
   if(!bounds)return 'Repeat your previous performance with controlled technique; record what you actually complete.';
-  if(bounds.timed)return `Aim to hold with good form within ${bounds.low}–${bounds.high} seconds. Stop when form breaks down.`;
   const rows=last.rows.slice(0,setCount);
-  if(rows.length>=setCount&&rows.every(r=>Number(r.reps)>=bounds.high))
-    return `All ${setCount} sets reached ${bounds.high} reps last time. If technique and recovery feel good, consider the next available load increment and return toward ${bounds.low} reps.`;
-  const next=rows.find(r=>Number(r.reps)<bounds.high);
-  return next?`At the same weight, try ${Math.min(Number(next.reps)+1,bounds.high)} reps at ${Number(next.weight)} kg on one set, keeping the other sets steady. Your range is ${bounds.low}–${bounds.high} reps; record actual results.`:`Keep the same load and work toward completing all ${setCount} sets within ${bounds.low}–${bounds.high} reps before increasing weight.`;
+  const nextIndex=rows.findIndex(row=>Number(row.reps)<bounds.high);
+  if(bounds.timed){
+    if(nextIndex<0) return `Aim to complete all ${setCount} holds at ${bounds.high} seconds with good form.`;
+    const seconds=Math.min(Math.floor(Number(rows[nextIndex].reps))+5,bounds.high);
+    return `Try ${seconds} seconds on set ${nextIndex+1} with good form.`;
+  }
+  if(nextIndex<0){
+    if(rows.length<setCount) return `Keep the same load and aim to complete all ${setCount} sets before increasing weight.`;
+    return `All ${setCount} sets reached ${bounds.high} reps. Try the next available load and aim for ${bounds.low} reps per set.`;
+  }
+  const next=rows[nextIndex],reps=Math.min(Math.floor(Number(next.reps))+1,bounds.high);
+  const unit=weightConvention(name)[0];
+  const load=unit==='kg per dumbbell'?'kg per dumbbell':unit==='Added kg'?'kg added':'kg';
+  return `At the same weight, try ${reps} reps on set ${nextIndex+1} at ${Number(next.weight)} ${load}. Keep the other sets steady.`;
+}
+function setWorkoutTarget(index,value){
+  const d=draft();
+  d.targets??={};
+  if(value.trim()) d.targets[index]=value.trim();
+  else delete d.targets[index];
+  save();
 }
 function prefillExercise(i,overwrite=false) {
   const [name,count]=PLAN[state.day].items[i],last=lastExercise(name),d=draft();
   if(!last||(!overwrite&&Object.hasOwn(d.sets,i)))return false;
   d.sets[i]=Array.from({length:count},(_,j)=>{
-    const r=last.rows[j];return r?{weight:String(r.weight),reps:String(r.reps)}:{weight:'',reps:''};
+    const r=last.rows[j];return r?{weight:String(r.weight),reps:String(r.reps),prefilled:true}:{weight:'',reps:''};
   });
   return true;
 }
 function copyPrevious(i) {
   if(draft().sets[i]?.some(r=>r.weight!==''||r.reps!=='')&&!confirm('Replace entered values for this exercise with the last workout?'))return;
   if(prefillExercise(i,true)){save();render();}
+}
+let setRest=null;
+function toggleWorkoutSet(i,j){
+  const d=draft(),row=d.sets[i]?.[j];
+  if(!row)return;
+  const undo=row.completed===true;
+  if(!undo&&(!validTrainingSet(row)||!Number.isInteger(Number(row.reps)))){
+    alert('Enter a weight and a positive whole number of reps or seconds.');
+    return;
+  }
+  row.completed=!undo;
+  d.done[i]=d.sets[i].every(set=>set.completed===true);
+  save();
+  render();
+  if(undo){
+    if(setRest?.row===row&&setRest.end===timerEnd)timerStop();
+    $('completeSet-'+i+'-'+j)?.focus();
+    return;
+  }
+  timerStart(90);
+  setRest={row,end:timerEnd};
+  const status=$('setCompletionStatus');
+  if(status){
+    status.textContent=`Set ${j+1} complete. 90-second rest started.`;
+    const undoButton=document.createElement('button');
+    undoButton.type='button';undoButton.className='btn secondary small';
+    undoButton.textContent='Undo';undoButton.onclick=()=>toggleWorkoutSet(i,j);
+    status.after(undoButton);
+  }
+  const buttons=[...document.querySelectorAll('#workout [id^="completeSet-"]')];
+  const source=$('completeSet-'+i+'-'+j);
+  const next=buttons.slice(buttons.indexOf(source)+1).find(button=>!button.closest('.set-completed'));
+  (next||source)?.focus();
+}
+function completedWorkoutSets(sets){
+  return Object.fromEntries(Object.entries(sets).map(([i,rows])=>[i,rows
+    .filter(row=>row.completed===true||(row.completed!==false&&!row.prefilled))
+    .map(({weight,reps})=>({weight,reps}))]));
 }
 previous=function(i,j){
   const last=lastExercise(PLAN[state.day]?.items[i]?.[0]),row=last?.rows[j];
@@ -54,10 +108,17 @@ workout=function(){
   PLAN[state.day].items.forEach((_,i)=>{changed=prefillExercise(i)||changed;});
   if(changed)save();
   workoutWithTimer();
+  $('restTime')?.closest('.card')?.insertAdjacentHTML('beforeend','<span id="setCompletionStatus" class="muted" role="status"></span>');
   document.querySelectorAll('#workout .exercise').forEach((el,i)=>{
     const [name,count,range]=PLAN[state.day].items[i],last=lastExercise(name);
     const hint=document.createElement('div');hint.className='hint';
-    hint.innerHTML=`<strong>Today’s target</strong><p>${esc(targetAdvice(name,draft().ranges[i]??range,count))}</p>${last?`<p class="muted">Last workout · ${esc(last.session.date)} · ${last.rows.map(r=>`${esc(r.weight)} kg × ${esc(r.reps)}`).join(' / ')}</p><button class="btn secondary small" onclick="copyPrevious(${i})">Copy last workout</button><p class="notice">Previous values are prefilled for convenience. Adjust them to what you complete before saving.</p>`:''}`;
+    const target=targetAdvice(name,draft().ranges[i]??range,count);
+    const override=draft().targets?.[i]??'';
+    const repUnit=/sec/i.test(range)?' sec':' reps';
+    hint.innerHTML=`<label for="workoutTarget${i}"><strong>Today’s target</strong></label>
+      <p id="workoutTargetAdvice${i}">${esc(target)}</p>
+      <input type="text" id="workoutTarget${i}" aria-label="Custom target for ${esc(name)}" aria-describedby="workoutTargetAdvice${i}" maxlength="180" value="${esc(override)}" placeholder="Set a custom target" oninput="setWorkoutTarget(${i},this.value)">
+      ${last?`<p class="muted">Last workout · ${esc(last.session.date)} · ${last.rows.map(r=>`${esc(r.weight)} kg × ${esc(r.reps)}${repUnit}`).join(' / ')}</p><button class="btn secondary small" onclick="copyPrevious(${i})">Copy last workout</button><p class="notice">Adjust the prefilled values if needed, then tap Done to log the set.</p>`:''}`;
     el.querySelector('.exercise-head').after(hint);
   });
 };
