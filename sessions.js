@@ -6,7 +6,7 @@ function validSessionDate(key){return /^\d{4}-\d{2}-\d{2}$/.test(key)&&localDate
 function sessionStats(session){
   const result=new Map();
   sessionPlan(session).items.forEach(([name,,range],i)=>{
-    const rows=(session.sets?.[i]||[]).filter(validTrainingSet),timed=/sec/i.test(range);
+    const rows=(session.sets?.[i]||[]).filter(row=>row.type!=='warmup'&&validTrainingSet(row)),timed=/sec/i.test(range);
     if(!rows.length)return;
     const key=JSON.stringify([name,timed]),stat=result.get(key)||{name,timed,sets:0,weight:0,reps:0,volume:0,e1rm:0};
     rows.forEach(r=>{
@@ -61,7 +61,7 @@ function startRepeatSession(id){
   if(!plan.items.length)return alert('This session has no exercise snapshot to repeat.');
   const sets={};plan.items.forEach(([,count],i)=>{
     const rows=(source.sets?.[i]||[]).filter(validTrainingSet);
-    sets[i]=rows.length?rows.map(r=>({weight:String(r.weight),reps:String(r.reps)})):Array.from({length:Math.max(1,count)},()=>({weight:'',reps:''}));
+    sets[i]=rows.length?rows.map(r=>({weight:String(r.weight),reps:String(r.reps),...(r.type==='warmup'?{type:r.type}:{})})):Array.from({length:Math.max(1,count)},()=>({weight:'',reps:''}));
   });
   studioEdit=null;state.repeatedWorkout={date:localDateKey(),day:source.day,planSnapshot:plan,sets,notes:'',sourceId:source.id,sourceDate:source.date};
   save();switchTab('sessionStudio');
@@ -75,7 +75,7 @@ function startEditSession(id){
 function studioDraft(){return studioEdit?.draft||state.repeatedWorkout;}
 function updateStudio(field,value,i,j){
   const d=studioDraft();if(!d)return;
-  if(field==='weight'||field==='reps')d.sets[i][j][field]=value;else d[field]=value;
+  if(field==='weight'||field==='reps'||field==='type')d.sets[i][j][field]=value;else d[field]=value;
   if(!studioEdit)save();
 }
 function studioSetCount(i,removeIndex=null){
@@ -116,7 +116,7 @@ function renderSessionStudio(){
   const editing=!!studioEdit;
   el.innerHTML=`<div class="row wrap"><div><div class="eyebrow">${editing?'CORRECT YOUR LOG':'REPEAT A WORKOUT'}</div><h2>${esc(d.planSnapshot.name)}</h2></div><button class="btn secondary small" onclick="cancelSessionStudio()">${editing?'Cancel edits':'Back to history'}</button></div><div class="card"><p>${editing?'Changes are applied only when you save. Your exercise snapshot stays attached to this session.':`Copied from ${esc(d.sourceDate)}. Adjust the prefilled values to what you actually complete. Your routine and regular drafts stay saved.`}</p><label for="studioDate">Workout date</label><input id="studioDate" type="date" max="${localDateKey()}" value="${esc(d.date)}" onchange="updateStudio('date',this.value)">${d.planSnapshot.items.map(([name,,range],i)=>{
     const rows=d.sets?.[i]||[];
-    return `<div class="exercise"><h3>${esc(name)}</h3><p class="muted"><strong>Weight guide:</strong> ${esc(weightGuidance(name,range))}</p><p class="muted">${esc(range)} ${/sec/i.test(range)?'':'reps'}</p><div class="studio-set-labels"><span>Set</span><span>${esc(weightConvention(name)[0])}</span><span>${/sec/i.test(range)?'Seconds':'Reps'}</span><span></span></div>${rows.map((r,j)=>`<div class="studio-set-row"><span>${j+1}</span><input type="number" min="0" step="any" inputmode="decimal" aria-label="${esc(name)} set ${j+1} weight" value="${esc(r.weight)}" oninput="updateStudio('weight',this.value,${i},${j})"><input type="number" min="1" step="1" inputmode="numeric" aria-label="${esc(name)} set ${j+1} ${/sec/i.test(range)?'seconds':'reps'}" value="${esc(r.reps)}" oninput="updateStudio('reps',this.value,${i},${j})"><button type="button" class="btn secondary small" aria-label="Remove ${esc(name)} set ${j+1}" onclick="studioSetCount(${i},${j})">−</button></div>`).join('')}<button type="button" class="btn secondary small" onclick="studioSetCount(${i})">Add set to ${esc(name)}</button></div>`;
+    return `<div class="exercise"><h3>${esc(name)}</h3><p class="muted"><strong>Weight guide:</strong> ${esc(weightGuidance(name,range))}</p><p class="muted">${esc(range)} ${/sec/i.test(range)?'':'reps'}</p><div class="studio-set-labels"><span>Set</span><span>${esc(weightConvention(name)[0])}</span><span>${/sec/i.test(range)?'Seconds':'Reps'}</span><span></span></div>${rows.map((r,j)=>`<div class="studio-set-row"><span>${j+1}</span><input type="number" min="0" step="any" inputmode="decimal" aria-label="${esc(name)} set ${j+1} weight" value="${esc(r.weight)}" oninput="updateStudio('weight',this.value,${i},${j})"><input type="number" min="1" step="1" inputmode="numeric" aria-label="${esc(name)} set ${j+1} ${/sec/i.test(range)?'seconds':'reps'}" value="${esc(r.reps)}" oninput="updateStudio('reps',this.value,${i},${j})"><button type="button" class="btn secondary small" aria-label="Remove ${esc(name)} set ${j+1}" onclick="studioSetCount(${i},${j})">−</button><label class="studio-set-type">Set type <select aria-label="Set ${j+1} type for ${esc(name)}" onchange="updateStudio('type',this.value,${i},${j})"><option value="working">Working</option><option value="warmup" ${r.type==='warmup'?'selected':''}>Warm-up</option></select></label></div>`).join('')}<button type="button" class="btn secondary small" onclick="studioSetCount(${i})">Add set to ${esc(name)}</button></div>`;
   }).join('')}<label for="studioNotes">Session notes</label><textarea id="studioNotes" rows="3" oninput="updateStudio('notes',this.value)">${esc(d.notes||'')}</textarea><div class="session-actions"><button type="button" class="btn" onclick="saveSessionStudio()">${editing?'Save changes':'Save repeated workout'}</button>${!editing?'<button type="button" class="btn secondary" onclick="discardRepeatSession()">Discard draft</button>':''}</div></div>`;
 }
 function updateStudioNav(){

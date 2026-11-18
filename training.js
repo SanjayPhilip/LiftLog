@@ -10,7 +10,7 @@ function validTrainingSet(row) {
 function exerciseHistory(name, before='9999-12-31') {
   return state.sessions.filter(s=>s.date<before).flatMap(s=>{
     const plan=sessionPlan(s);
-    const rows=plan.items.flatMap(([n],i)=>n===name?(s.sets?.[i]||[]):[]).filter(validTrainingSet);
+    const rows=plan.items.flatMap(([n],i)=>n===name?(s.sets?.[i]||[]):[]).filter(row=>row.type!=='warmup'&&validTrainingSet(row));
     return rows.length?[{session:s,rows}]:[];
   }).sort((a,b)=>a.session.date.localeCompare(b.session.date)||a.session.day-b.session.day);
 }
@@ -51,14 +51,24 @@ function setWorkoutTarget(index,value){
 function prefillExercise(i,overwrite=false) {
   const [name,count]=PLAN[state.day].items[i],last=lastExercise(name),d=draft();
   if(!last||(!overwrite&&Object.hasOwn(d.sets,i)))return false;
-  d.sets[i]=Array.from({length:count},(_,j)=>{
+  const warmups=(d.sets[i]||[]).filter(row=>row.type==='warmup');
+  d.sets[i]=warmups.concat(Array.from({length:count},(_,j)=>{
     const r=last.rows[j];return r?{weight:String(r.weight),reps:String(r.reps),prefilled:true}:{weight:'',reps:''};
-  });
+  }));
   return true;
 }
 function copyPrevious(i) {
   if(draft().sets[i]?.some(r=>r.weight!==''||r.reps!=='')&&!confirm('Replace entered values for this exercise with the last workout?'))return;
-  if(prefillExercise(i,true)){save();render();}
+  if(prefillExercise(i,true)){draft().done[i]=false;save();render();}
+}
+function addWarmupSet(i){
+  const d=draft(),count=PLAN[state.day].items[i][1];
+  d.sets[i]??=Array.from({length:count},()=>({weight:'',reps:''}));
+  const firstWorking=d.sets[i].findIndex(row=>row.type!=='warmup');
+  const index=firstWorking<0?d.sets[i].length:firstWorking;
+  d.sets[i].splice(index,0,{weight:'',reps:'',type:'warmup'});
+  save();render();
+  $('completeSet-'+i+'-'+index)?.closest('.setrow')?.querySelector('input')?.focus();
 }
 let setRest=null;
 function toggleWorkoutSet(i,j){
@@ -70,7 +80,8 @@ function toggleWorkoutSet(i,j){
     return;
   }
   row.completed=!undo;
-  d.done[i]=d.sets[i].every(set=>set.completed===true);
+  const working=d.sets[i].filter(set=>set.type!=='warmup');
+  d.done[i]=working.length>0&&working.every(set=>set.completed===true);
   save();
   render();
   if(undo){
@@ -95,8 +106,8 @@ function toggleWorkoutSet(i,j){
 }
 function completedWorkoutSets(sets){
   return Object.fromEntries(Object.entries(sets).map(([i,rows])=>[i,rows
-    .filter(row=>row.completed===true||(row.completed!==false&&!row.prefilled))
-    .map(({weight,reps})=>({weight,reps}))]));
+    .filter(row=>row.completed===true||(row.completed!==false&&!row.prefilled&&(String(row.weight??'').trim()!==''||String(row.reps??'').trim()!=='')))
+    .map(({weight,reps,type})=>type==='warmup'?{weight,reps,type}:{weight,reps})]));
 }
 previous=function(i,j){
   const last=lastExercise(PLAN[state.day]?.items[i]?.[0]),row=last?.rows[j];
@@ -140,7 +151,7 @@ function renderHistoryResults(){
     const p=sessionPlan(s),sets=Object.values(s.sets||{}).flat().filter(validTrainingSet),volume=sets.reduce((sum,r)=>sum+Number(r.weight)*Number(r.reps),0);
     return `<details class="history-session"><summary><strong>${esc(s.date)} · ${esc(p.name)}</strong><span class="muted">${sets.length} logged sets · ${round(volume).toLocaleString()} kg volume</span></summary>${p.items.map(([name,,range],i)=>{
       const rows=(s.sets?.[i]||[]).filter(validTrainingSet);
-      return `<div class="exercise"><h3>${esc(name)}</h3>${rows.length?`<ol>${rows.map(r=>`<li>${esc(r.weight)} kg × ${esc(r.reps)} ${/sec/i.test(range)?'sec':'reps'}</li>`).join('')}</ol>`:'<p class="muted">No sets recorded.</p>'}</div>`;
+      return `<div class="exercise"><h3>${esc(name)}</h3>${rows.length?`<ol>${rows.map(r=>`<li>${r.type==='warmup'?'Warm-up · ':''}${esc(r.weight)} kg × ${esc(r.reps)} ${/sec/i.test(range)?'sec':'reps'}</li>`).join('')}</ol>`:'<p class="muted">No sets recorded.</p>'}</div>`;
     }).join('')}<div class="session-actions"><button type="button" class="btn secondary small" data-session-action="repeat" data-session-id="${esc(s.id)}">Repeat this workout</button><button type="button" class="btn secondary small" data-session-action="edit" data-session-id="${esc(s.id)}">Edit saved workout</button></div>${s.notes?`<h3>Session notes</h3><p class="session-notes">${esc(s.notes)}</p>`:''}</details>`;
   }).join(''):'<p class="empty">'+(state.sessions.length?'No sessions match these filters.':'No workouts yet. Save your first workout to start your history.')+'</p>');
 }
