@@ -1,3 +1,18 @@
 .hint p{margin:7px 0;line-height:1.5}.training-filters{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.training-filters label{font-size:12px;color:var(--muted)}.training-filters input,.training-filters select{margin-top:6px;min-width:0}.history-session{border-top:1px solid var(--line);padding:16px 0}.history-session summary{cursor:pointer;line-height:1.6;overflow-wrap:anywhere}.history-session summary .muted{display:block}.history-session[open] summary{margin-bottom:14px;color:var(--accent)}.session-notes{white-space:pre-wrap;overflow-wrap:anywhere}.training-records{margin:20px 0;grid-template-columns:repeat(2,minmax(0,1fr))}.training-records strong{font-size:clamp(20px,4vw,30px);overflow-wrap:anywhere}.training-chart{width:100%;height:auto;margin-top:18px;color:var(--muted)}.training-table{overflow-x:auto}table{width:100%;border-collapse:collapse;margin-top:14px}caption{text-align:left;color:var(--muted);padding:8px}th,td{text-align:left;padding:10px;border-bottom:1px solid var(--line);font-size:13px}summary:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:4px}@media(max-width:600px){.training-filters{grid-template-columns:repeat(2,minmax(0,1fr))}.training-records{gap:8px}.training-records .metric{padding:10px}}
 
 .session-actions{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}.studio-set-row,.studio-set-labels{display:grid;grid-template-columns:30px minmax(0,1fr) minmax(0,1fr) 40px;gap:8px;align-items:center;margin:10px 0}.studio-set-labels{font-size:12px;color:var(--muted)}.studio-set-row input{min-width:0}.session-celebration{border-color:var(--accent)!important}.session-celebration li,#weeklySummary li{line-height:1.7;overflow-wrap:anywhere}.btn:disabled{opacity:.45;cursor:default}.history-session .session-actions button{white-space:normal}#sessionStudio label{display:block;margin:12px 0 6px}#weeklySummary .metric small{display:block;line-height:1.5}#weeklySummary .row>div{min-width:0}
+
+.set-action{grid-column:2 / -1;display:flex;justify-content:flex-end}
+.set-action .btn{min-height:44px;min-width:94px;padding:8px 12px}
+.set-completed{border-inline-start:2px solid var(--accent);padding-inline-start:4px}
+
+.set-action{align-items:center;gap:10px}.studio-set-type{grid-column:2 / -1}
+
+.schedule-heading{flex-wrap:wrap;gap:10px}
+.schedule-heading .btn{min-height:44px}
+.schedule-grip{position:absolute;top:6px;right:6px;min-width:44px;min-height:44px;padding:8px;text-align:center;line-height:1;font-size:24px;color:var(--muted);touch-action:none;cursor:grab;user-select:none}
+.schedule-grip:active{cursor:grabbing;color:var(--accent)}
+.schedule-tile.rest-tile[aria-disabled="true"]{cursor:default}
+.swapping-days .schedule-tile{cursor:pointer;user-select:none;opacity:1}
+.schedule-tile.swap-source{outline:3px solid var(--accent);outline-offset:2px}
+.schedule-tile.swap-target{box-shadow:inset 0 0 0 3px var(--accent)!important}

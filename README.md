@@ -69,6 +69,6 @@ Workout and repeated-draft exercises have **Swap exercise** controls. The replac
 
 ## Swap days this week
 
-On Home, drag the **⠿ handle** on a schedule card onto another card to swap them directly. You can also select **Swap days**, then drag anywhere on a card or tap two days. Workout and rest days exchange places for the current Monday–Sunday week. Select **Done swapping** to open workouts normally. Assignments sync with your account and survive reloads; next week uses the regular split. Plan changes reset the week's assignments. Swaps leave workout IDs, entered drafts and saved history intact.
+On Home, drag the **⠿ handle** on a schedule card onto another card to swap them directly. You can also select **Swap days**, then tap two days. Workout and rest days exchange places for the current Monday–Sunday week. Select **Done swapping** to open workouts normally. Assignments sync with your account and survive reloads; next week uses the regular split. Plan changes reset the week's assignments. Swaps leave workout IDs, entered drafts and saved history intact.
 
 Run `python tests/schedule_browser.py` against the local server for drag, tap, keyboard, reload, workout identity and week-reset checks with mocked account responses.
