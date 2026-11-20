@@ -38,7 +38,7 @@ function scheduleHTML() {
     <div><div class="eyebrow">WEEKLY SPLIT</div><h2>Your schedule<span class="wordmark-dot">.</span></h2></div>
     <button type="button" id="scheduleSwap" class="btn secondary" aria-pressed="${swappingDays}" onclick="toggleDaySwap()">${swappingDays ? 'Done swapping' : 'Swap days'}</button>
   </div>
-  <p class="schedule-intro" id="scheduleStatus" role="status">${scheduleNotice || (swappingDays ? 'Choose two days to swap for this week.' : 'Tap a training day to open its workout.')}</p>
+  <p class="schedule-intro" id="scheduleStatus" role="status">${scheduleNotice || (swappingDays ? 'Drag a card onto another day, or tap two cards to swap.' : 'Drag a card to swap days, or tap a training day to open its workout.')}</p>
   <div class="schedule-grid ${swappingDays ? 'swapping-days' : ''}">${tiles}</div>
   <button type="button" class="text-action" onclick="switchTab('profile');openPlanEditor()">Customize plan ↗</button>`;
 }
@@ -107,17 +107,16 @@ function bindScheduleDrag() {
       if (!swappingDays) event.stopPropagation();
     });
     tile.addEventListener('pointerdown', event => {
-      const fromHandle = event.target.closest('.schedule-grip');
-      if (!event.isPrimary || event.button !== 0 ||
-          (!fromHandle && (!swappingDays || event.pointerType !== 'mouse'))) return;
+      if (!event.isPrimary || (event.pointerType === 'mouse' && event.button !== 0)) return;
       drag = {id: event.pointerId, x: event.clientX, y: event.clientY, moved: false};
+      if (event.pointerType === 'touch') tile.setPointerCapture(event.pointerId);
     });
     tile.addEventListener('pointermove', event => {
       if (!drag || event.pointerId !== drag.id) return;
       if (!drag.moved) {
         if (Math.hypot(event.clientX - drag.x, event.clientY - drag.y) <= 8) return;
         drag.moved = true;
-        tile.setPointerCapture(event.pointerId);
+        if (!tile.hasPointerCapture(event.pointerId)) tile.setPointerCapture(event.pointerId);
       }
       tile.classList.add('swap-source');
       const target = targetAt(event);
@@ -128,6 +127,7 @@ function bindScheduleDrag() {
       const moved = drag.moved;
       drag = null;
       if (!moved) return;
+      tile.classList.remove('swap-source');
       const target = targetAt(event);
       scheduleIgnoreClick = true;
       setTimeout(() => { scheduleIgnoreClick = false; }, 0);
@@ -138,8 +138,8 @@ function bindScheduleDrag() {
         paintSwapSource();
       }
     });
-    tile.addEventListener('pointerleave', () => {
-      if (drag && !drag.moved) drag = null;
+    tile.addEventListener('pointerleave', event => {
+      if (drag && event.pointerType === 'mouse' && !drag.moved) drag = null;
     });
     tile.addEventListener('pointercancel', () => {
       drag = null;
