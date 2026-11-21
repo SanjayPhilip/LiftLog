@@ -69,11 +69,12 @@ function scheduleTilesHTML() {
       data-schedule-day="${weekday}" ${swappingDays ? 'aria-pressed="false"' : rest ? 'tabindex="-1"' : ''}
       aria-label="${scheduleWeekdays[weekday]}, ${esc(rest ? 'Recovery, rest day' : day.name)}"
       onclick="scheduleClick(${weekday})">
+      <span class="tile-turn"><span class="tile-front">
       <span class="schedule-weekday">${scheduleWeekdays[weekday].slice(0, 3).toUpperCase()} ${weekday === today ? '<i>Today</i>' : ''}</span>
       <span class="schedule-grip" aria-hidden="true">⠿</span>
-      <span class="tile-turn"><span class="tile-front"><span class="schedule-name">${rest ? 'Recovery' : esc(day.name)}</span>
-      <span class="schedule-meta">${rest ? 'Rest day' : `${day.items.length} exercises`}</span></span>
-        <span class="tile-back">${rest ? 'Recovery between training days.' : esc(workoutDescription(day))}</span>
+        <span class="schedule-name">${rest ? 'Recovery' : esc(day.name)}</span>
+        <span class="schedule-meta">${rest ? 'Rest day' : `${day.items.length} exercises`}</span></span>
+        <span class="tile-back"><span class="schedule-grip" aria-hidden="true">⠿</span>${rest ? 'Recovery between training days.' : esc(workoutDescription(day))}</span>
       </span>
     </button>`;
   }).join('');

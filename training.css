@@ -410,3 +410,40 @@ input:invalid{border-color:#dc5574}
   input[type=checkbox]{width:44px;height:44px;margin:0;max-width:100%}
   .setrow input{padding-inline:2px}
 }
+
+/* Keep the hit area stationary while both painted faces turn. */
+.schedule-grid .schedule-tile{padding:0;background:transparent;border-color:transparent;overflow:visible}
+.schedule-tile .tile-turn{width:100%;min-height:inherit;margin:0}
+.tile-turn>:is(.tile-front,.tile-back){position:relative;align-items:flex-start;padding:12px;border:1px solid var(--line);border-radius:13px;background:var(--surface);-webkit-backface-visibility:hidden;backface-visibility:hidden}
+.chosen .tile-turn>span{background:var(--soft);border-color:var(--highlight)}
+.tile-turn .schedule-weekday{padding-right:24px;margin-bottom:8px}
+.tile-turn .tile-back{padding-top:32px;background:linear-gradient(145deg,var(--soft),var(--surface))}
+.hard-card{position:relative;isolation:isolate;overflow:hidden;min-height:144px}
+.hard-card summary{position:absolute;inset:0;display:grid;place-content:center;min-height:44px;transition:inset .3s,border-radius .3s,box-shadow .3s}
+.hard-card[open] summary{inset:5px 6% 48%;transform:none;border-radius:12px 12px 30px 30px;box-shadow:0 6px 0 var(--soft),0 10px 14px #0004}
+.hard-card[open] p{margin:0;padding:76px 8px 8px}
+.hard-card summary::after,.landing-cover::after{content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;background:linear-gradient(128deg,transparent 18%,#c43f7155 33%,#88ced866 44%,#ecda9755 50%,#ab79cd55 58%,transparent 75%);background-size:270% 220%;background-position:100% 0;opacity:0;transition:background-position .8s,opacity .35s}
+.hard-card:is([open],:focus-within) summary::after,.landing-cover:is(:hover,:focus-within)::after{background-position:0 100%;opacity:.85;animation:none;transform:none}
+.athlete-card{min-height:128px}
+.athlete-card summary{position:relative;z-index:1}
+.athlete-front{display:grid;place-items:center;min-height:128px;transition:min-height .35s,padding .35s}
+.athlete-card[open] .athlete-front{min-height:56px;padding:10px;transform:none}
+.athlete-card[open] p{padding:12px;animation:athlete-reveal .35s ease-out}
+@keyframes athlete-reveal{from{opacity:0;transform:translateY(-32px)}}
+:is(.hero,.landing-shell)::after{content:"";position:absolute;pointer-events:none;right:6%;top:12%;width:48px;height:48px;border-radius:10px;border:1px solid #ffd7df55;background:linear-gradient(135deg,#ffb9c433,#ae234129);backdrop-filter:blur(5px);box-shadow:-34px 34px 0 -10px #ef748332;opacity:0;transform:translateY(12px);transition:opacity .35s,transform .35s;z-index:-1}
+:is(.hero,.landing-shell):is(:hover,:focus-within,:active)::after{opacity:1;transform:translateY(-6px)}
+@media(min-width:900px){
+ .nav-dock .tabs{align-items:flex-start}
+ .nav-dock .tabs button{width:48px;border-radius:30px;overflow:hidden;transition:width .28s}
+ .nav-dock .tabs button:is(:hover,:focus-visible){width:100%}
+ .nav-dock .tabs .nav-icon{justify-self:center;margin:0}
+ .nav-dock .tabs .nav-label{opacity:0;transform:scale(.75)}
+ .nav-dock .tabs button:is(:hover,:focus-visible) .nav-label{opacity:1;transform:scale(1)}
+ .tabs button::before{inset:3px 10px;transition:transform .2s}
+ .tabs button::after{inset:6px 0;transform:scaleY(0);transform-origin:center;transition:transform .22s .07s}
+ .tabs button:is(:hover,:focus-visible)::after{transform:scaleY(1)}
+}
+@media(prefers-reduced-motion:reduce){
+ .hard-card summary,.hard-card summary::after,.landing-cover::after,.athlete-front,.tile-turn,.nav-dock .tabs button,:is(.hero,.landing-shell)::after{transition:none!important}
+ .athlete-card[open] p{animation:none}
+}
