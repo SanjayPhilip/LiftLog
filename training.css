@@ -23,48 +23,141 @@
 .progress-schedule li{display:grid;gap:4px;padding:10px;border:1px solid var(--line);border-radius:8px}
 .progress-schedule span{color:var(--muted)}
 
-/* Midnight glass */
+/* Shared surfaces and typography */
+:root{
+  --radius:16px;
+  --glass:linear-gradient(150deg,#fff,#f7f9ff);
+  --glass-shadow:0 10px 32px #28417a0c;
+  --cobalt:#315bff;
+}
 :root:not([data-theme="light"]){
   color-scheme:dark;
-  --bg:#070910;
-  --surface:#151c35d9;
-  --surface2:#1b2548c9;
-  --ink:#f1f5ff;
-  --muted:#aab7d3;
-  --line:#839aff40;
+  --bg:#090b12;
+  --surface:#121724;
+  --surface2:#181e2e;
+  --ink:#f0f3fa;
+  --muted:#a6b0c5;
+  --line:#7788ac38;
   --accent:#c5ff35;
-  --accent-ink:#151e08;
-  --soft:#192854;
-  --cobalt:#315bff;
-  --glass:linear-gradient(145deg,#25305ac7,#0f1427de 78%);
+  --accent-ink:#171f0b;
+  --soft:#1b2949;
+  --glass:linear-gradient(150deg,#202a40bb,#121722e8 75%);
+  --glass-shadow:0 12px 32px #0003,inset 0 1px #bfd2ff0c;
 }
-:root:not([data-theme="light"]) body,
-:root:not([data-theme="light"]) #authGate{
-  background:radial-gradient(ellipse at 85% 0%,#1c3394 0%,transparent 36rem),
-    radial-gradient(ellipse at 0% 26rem,#14214f 0%,transparent 34rem),var(--bg);
+body{
+  background:radial-gradient(ellipse 680px 410px at 80% 0%,color-mix(in srgb,var(--cobalt) 17%,transparent),transparent),var(--bg);
 }
-:root:not([data-theme="light"]) :is(.card,.stat-card,.hero,.next-session,.insight-panel,.schedule-tile:not(.chosen):not(.rest-tile)){
+main{max-width:1120px;padding:24px clamp(16px,4vw,36px) 32px}
+h1,h2,h3{line-height:1.2}
+h2{font-size:clamp(20px,3vw,26px);letter-spacing:-.035em}
+p{margin-block:8px 14px}
+.card,.stat-card,.auth-panel{
   background:var(--glass);
-  box-shadow:inset 0 1px 0 #b4c5ff20,0 10px 28px #0003;
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  box-shadow:var(--glass-shadow);
 }
-:root:not([data-theme="light"]) :is(header,.tabs){
-  background:#090e20d6;
-  backdrop-filter:blur(14px);
+.metric{border:1px solid var(--line);background:var(--surface2)}
+.btn,.theme-toggle{min-height:44px}
+.btn.small{min-height:36px}
+.btn:hover{transform:none}
+.btn.danger{background:#542f35;color:#ffd6d6}
+header,.tabs{
+  background:color-mix(in srgb,var(--bg) 84%,transparent);
+  border-color:var(--line);
+  backdrop-filter:blur(16px);
 }
-:root:not([data-theme="light"]) .tabs button.active{
-  background:linear-gradient(#315bff33,transparent);
-  box-shadow:inset 0 2px var(--cobalt);
+header{gap:10px;padding:10px clamp(14px,4vw,36px)}
+.header-theme{margin-left:auto}
+.header-theme .theme-icon{margin:0}
+.header-theme .theme-label{display:none}
+#syncBadge{color:var(--muted);text-align:right;overflow-wrap:anywhere}
+.tabs{min-height:62px}
+.tabs button{min-width:0;padding:9px 3px;border-top:2px solid transparent}
+.tabs button.active{
+  border-top-color:var(--cobalt);
+  background:linear-gradient(color-mix(in srgb,var(--cobalt) 13%,transparent),transparent);
 }
-:root:not([data-theme="light"]) .btn.secondary{background:#213ea254;border-color:#5178ff9c}
-:root:not([data-theme="light"]) .hero-art{background:radial-gradient(ellipse at 55% 47%,#315bff77,transparent 66%)}
-:root:not([data-theme="light"]) .hero-ring{border-color:#7594ff}
-:root:not([data-theme="light"]) .hero-core{background:linear-gradient(135deg,#e0ff93,var(--accent) 65%,#8baa32);box-shadow:15px 23px #405b20,20px 28px 45px #0006}
-:root:not([data-theme="light"]) .auth-showcase{background:radial-gradient(ellipse at 52% 34%,#2348cf,#101b43 53%,var(--bg))}
-:root:not([data-theme="light"]) .auth-showcase p,
-:root:not([data-theme="light"]) .auth-stats{color:var(--muted)}
-:root:not([data-theme="light"]) .sculpture-ring{border-color:#7094ffba}
-:root:not([data-theme="light"]) .progress-schedule li{background:var(--glass)}
-.schedule-tile.chosen .schedule-grip{color:var(--accent-ink)}
-:root:not([data-theme="light"]) :is(.hero,#weeklySummary){
-  backdrop-filter:blur(12px);
+.tabs button span{font-size:18px;line-height:1}
+
+/* Dashboard */
+.hero{
+  position:relative;
+  background:radial-gradient(ellipse 500px 240px at 98% 0%,color-mix(in srgb,var(--cobalt) 34%,transparent),transparent),var(--glass);
+  border:1px solid var(--line);
+  border-radius:20px;
+  box-shadow:var(--glass-shadow);
+}
+.hero-copy{padding:clamp(20px,4vw,34px)}
+.hero-copy .eyebrow{margin:0 0 8px}
+.hero-copy h2{margin:0;font-size:clamp(25px,4vw,40px);overflow-wrap:anywhere}
+.hero-meta{margin:8px 0 16px}
+.hero-meta span{padding-inline:4px}
+.hero-actions{display:flex;gap:8px;flex-wrap:wrap}
+.training-overview{margin-top:28px}
+.stat-card{padding:14px}
+.stat-card>span{display:block;font-size:12px;font-weight:650;letter-spacing:0}
+.stat-card strong{font-size:clamp(21px,3vw,30px);margin:6px 0 0;letter-spacing:-.04em}
+.last-session{letter-spacing:0;font-size:12px;margin:14px 0;gap:6px}
+
+.schedule-heading{margin:26px 0 6px}
+.schedule-heading h2{margin:0;font-size:clamp(20px,3vw,26px)}
+.schedule-intro{margin:0 0 12px;line-height:1.45}
+.schedule-grid{gap:8px}
+.schedule-tile,.schedule-tile.rest-tile,.schedule-tile.chosen{
+  background:var(--glass);
+  color:var(--ink);
+  min-height:110px;
+  border:1px solid var(--line);
+  border-radius:13px;
+  padding:12px;
+  opacity:1;
+}
+.schedule-tile.chosen{border-color:color-mix(in srgb,var(--cobalt) 70%,var(--line));background:var(--soft)}
+.schedule-tile.rest-tile{background:var(--surface);color:var(--muted)}
+.schedule-tile .schedule-weekday,.schedule-tile.chosen .schedule-weekday{color:var(--muted);letter-spacing:.025em}
+.schedule-tile .schedule-weekday i,.schedule-tile.chosen .schedule-weekday i{color:var(--accent);font-size:10px;margin:0 0 0 3px}
+.schedule-name{font-weight:750;font-size:13px;margin:11px 0 0}
+.schedule-tile .schedule-meta,.schedule-tile.chosen .schedule-meta{font-size:11px;letter-spacing:0;color:var(--muted);margin-top:auto;padding-top:5px}
+.schedule-grip{top:0;right:0;font-size:20px;padding:7px 8px 0 0;text-align:right}
+.schedule-tile.drag-origin{opacity:.36}
+.schedule-tile.schedule-ghost{min-height:0;opacity:.96}
+#weeklySchedule .text-action{min-height:44px;padding:0}
+.progress-schedule li{background:var(--glass)}
+
+/* Account screen */
+#authGate{
+  display:grid;
+  justify-items:center;
+  align-items:start;
+  justify-content:stretch;
+  padding:clamp(24px,13vh,128px) 16px 28px;
+  background:radial-gradient(ellipse 580px 370px at 55% 15%,color-mix(in srgb,var(--cobalt) 29%,transparent),transparent),var(--bg);
+}
+.auth-panel{width:min(100%,440px);padding:clamp(20px,5vw,32px);backdrop-filter:blur(16px)}
+.auth-top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.auth-form{margin-top:28px}
+.auth-form h1{font-size:clamp(25px,6vw,31px);letter-spacing:-.04em}
+.auth-form>p{margin-bottom:20px;font-size:14px}
+.auth-form .field{margin-top:14px}
+.auth-form .field label{color:var(--ink);font-weight:650}
+#authGate input{margin:0;min-height:46px}
+#authGate button{margin:0}
+#authGate :is(.auth-submit,.auth-signup){display:block;width:100%;margin-top:10px}
+#authGate .auth-submit{margin-top:20px}
+#authMessage{margin-bottom:0}
+#authMessage:empty,#authConfigMessage:empty{display:none}
+
+@media(max-width:950px){.schedule-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:620px){
+  main{padding-top:16px}
+  .schedule-grid,.stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .schedule-tile,.schedule-tile.chosen,.schedule-tile.rest-tile{min-height:97px}
+  #syncBadge{font-size:10px}
+  header .wordmark{font-size:16px}
+}
+@media(max-width:360px){
+  header{gap:7px}
+  .tabs button{font-size:10px}
+  .schedule-heading .btn{padding-inline:9px}
 }
