@@ -21,6 +21,7 @@ with sync_playwright() as p:
     tile(2).locator('.schedule-grip').tap()
     expect(page.locator('#dashboard')).to_be_visible()
     # Direct card handles work without entering swap mode.
+    page.evaluate("window.dashboardHero = document.querySelector('.hero')")
     # Actual pointer drag from Wednesday legs to Thursday rest.
     tile(2).scroll_into_view_if_needed()
     a=tile(2).locator('.schedule-grip').bounding_box(); b=tile(3).bounding_box()
@@ -30,23 +31,47 @@ with sync_playwright() as p:
     expect(page.locator('#scheduleStatus')).to_contain_text('Wednesday and Thursday swapped')
     assert page.evaluate("state.drafts['2026-11-19|2'].notes")=='Leg draft'
     assert page.evaluate('PLAN[2].name')=='Legs + Abs'
+    assert page.evaluate("document.querySelector('.hero') === window.dashboardHero")
+    page.locator('[data-tab="progressPage"]').click()
+    planned = page.locator('#weeklySummary .progress-schedule li')
+    expect(planned.nth(2)).to_have_text('WednesdayRecovery')
+    expect(planned.nth(3)).to_have_text('ThursdayLegs + Abs')
     page.wait_for_function('window.savedPayload?.weekSchedules')
     page.evaluate("localStorage.setItem('testFixture',JSON.stringify(window.savedPayload))")
     page.reload();expect(page.locator('#authGate')).to_be_hidden()
     expect(tile(3)).to_contain_text('Legs');expect(tile(2)).to_contain_text('Recovery')
+    page.locator('[data-tab="progressPage"]').click()
+    expect(planned.nth(3)).to_have_text('ThursdayLegs + Abs')
+    page.locator('[data-tab="dashboard"]').click()
     tile(3).click();assert page.evaluate('state.day')==2
     expect(page.locator('#workout h2')).to_contain_text('Legs + Abs')
     expect(page.locator('#workout textarea')).to_have_value('Leg draft')
     page.evaluate("switchTab('dashboard')")
-    # Tap and keyboard fallback, including rest as the source, on mobile.
     page.set_viewport_size({'width':390,'height':844})
-    page.get_by_role('button',name='Swap days',exact=True).tap()
-    tile(2).tap();tile(3).tap()
+    # Tap and keyboard fallback, including rest as the source, on mobile.
+    page.get_by_role('button',name='Swap days',exact=True).click()
+    tile(2).scroll_into_view_if_needed()
+    tile(2).tap()
+    expect(tile(2)).to_have_attribute('aria-pressed', 'true')
+    tile(3).tap()
     expect(tile(2)).to_contain_text('Legs');expect(tile(3)).to_contain_text('Recovery')
     tile(0).focus();page.keyboard.press('Enter');tile(1).focus();page.keyboard.press('Enter')
     expect(tile(0)).to_contain_text('Back Width + Biceps');expect(tile(1)).to_contain_text('Chest + Triceps')
     expect(tile(1)).to_be_focused()
     assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
+    # Drag from the body of a card with a real touch pointer.
+    tile(0).scroll_into_view_if_needed()
+    a = tile(0).bounding_box()
+    b = tile(1).bounding_box()
+    cdp = context.new_cdp_session(page)
+    x, y = a['x'] + a['width']/2, a['y'] + a['height']/2
+    dx = b['x'] + b['width']/2 - x
+    cdp.send('Input.dispatchTouchEvent', {'type':'touchStart','touchPoints':[{'x':x,'y':y}]})
+    for step in range(1, 9):
+        cdp.send('Input.dispatchTouchEvent', {'type':'touchMove','touchPoints':[{'x':x+dx*step/8,'y':y}]})
+    cdp.send('Input.dispatchTouchEvent', {'type':'touchEnd','touchPoints':[]})
+    expect(tile(0)).to_contain_text('Chest + Triceps')
+    expect(tile(1)).to_contain_text('Back Width + Biceps')
     # A changed plan invalidates the saved layout, and next Monday gets the default split.
     assert page.evaluate("(()=>{const name=PLAN[2].name;PLAN[2].name='New legs';const days=weeklySchedule();PLAN[2].name=name;return days})()") == [0,1,2,-1,3,4,-1]
     page.clock.set_fixed_time(datetime(2026,11,23,12,tzinfo=timezone.utc))
