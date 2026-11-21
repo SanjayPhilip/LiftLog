@@ -37,7 +37,7 @@ function workoutBar(day){
 function quickAdd(){
   const i=Number($('quickExercise').value);
   const draftRows=draft().sets;
-  draftRows[i]??=Array.from({length:PLAN[state.day].items[i][1]},()=>({weight:'',reps:''}));
+  draftRows[i]??=Array.from({length:activeWorkoutPlan().items[i][1]},()=>({weight:'',reps:''}));
   const previous=draftRows[i].filter(row=>row.type!=='warmup'&&validTrainingSet(row)).at(-1);
   draftRows[i].push(previous?{weight:previous.weight,reps:previous.reps,prefilled:true}:{weight:'',reps:''});
   save(true);render();
@@ -67,4 +67,29 @@ function labelFields(root){
       input.id ||= 'field-'+crypto.randomUUID();label.htmlFor=input.id;
     }else if(input.placeholder){input.setAttribute('aria-label',input.placeholder);}
   }
+}
+
+function activeWorkoutPlan(){
+  return draft().planSnapshot || PLAN[state.day];
+}
+
+function appendWorkoutExercise(studio){
+  const name=prompt('Exercise name (this workout only)')?.trim();
+  if(!name)return;
+  if(name.length>100)return alert('Use an exercise name of 100 characters or fewer.');
+  const session=studio?studioDraft():draft();
+  if(!session)return;
+  session.planSnapshot??=structuredClone(PLAN[state.day]);
+  const index=session.planSnapshot.items.length;
+  session.planSnapshot.items.push([name,1,'8–12']);
+  session.sets[index]=[{weight:'',reps:''}];
+  if(studio){
+    if(studioEdit)storeEditorDraft();else save();
+    renderSessionStudio();
+  }else{
+    save();
+    render();
+  }
+  const root=studio?'#sessionStudio':'#workout';
+  document.querySelectorAll(root+' .exercise')[index]?.querySelector('input[type="number"]')?.focus();
 }
