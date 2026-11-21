@@ -28,22 +28,22 @@
   --radius:16px;
   --glass:linear-gradient(150deg,#fff,#f7f9ff);
   --glass-shadow:0 10px 32px #28417a0c;
-  --highlight:#315bff;
+  --highlight:#af1639;
   --ambient:var(--highlight);
 }
 :root:not([data-theme="light"]){
   color-scheme:dark;
-  --bg:#080808;
+  --bg:#0a090a;
   --surface:#151515;
   --surface2:#202020;
   --ink:#f0f0f0;
   --muted:#ababab;
   --line:#ffffff28;
-  --accent:#dedede;
+  --accent:#ff8596;
   --accent-ink:#121212;
-  --soft:#303030;
-  --highlight:#b3b3b3;
-  --ambient:#656565;
+  --soft:#322025;
+  --highlight:#dc3555;
+  --ambient:#802437;
   --glass:linear-gradient(150deg,#303030bd,#121212e6 75%);
   --glass-shadow:0 12px 32px #0003,inset 0 1px #ffffff18;
 }
@@ -169,7 +169,8 @@ header{gap:10px;padding:10px clamp(14px,4vw,36px)}
   backdrop-filter:blur(9px);
 }
 :root:not([data-theme="light"]) .btn:not(.secondary):not(.danger){
-  background:linear-gradient(#efefef,#c6c6c6);
+  background:linear-gradient(150deg,#c22346,#a81637);
+  color:#fff;
 }
 :root:not([data-theme="light"]) .schedule-tile.chosen{
   box-shadow:inset 3px 0 var(--highlight);
@@ -177,4 +178,43 @@ header{gap:10px;padding:10px clamp(14px,4vw,36px)}
 @media(prefers-reduced-transparency:reduce){
   :root:not([data-theme="light"]) {--glass:var(--surface)}
   :root:not([data-theme="light"]) :is(.hero,.card,.stat-card,.schedule-grid,.tabs,header,.auth-panel){backdrop-filter:none}
+}
+
+#authGate{padding:clamp(18px,7vh,80px) clamp(14px,4vw,60px);align-items:center}
+.landing-shell{
+  width:min(100%,1080px);display:grid;grid-template-columns:1.2fr 1fr;
+  overflow:hidden;border:1px solid var(--line);border-radius:24px;
+  background:var(--glass);box-shadow:0 24px 80px #0004;
+}
+.landing-cover{
+  position:relative;isolation:isolate;overflow:hidden;min-height:510px;
+  display:flex;flex-direction:column;justify-content:space-between;
+  padding:clamp(24px,4vw,52px);color:#fff;background:#141214;
+}
+.landing-cover::before{
+  content:"";position:absolute;inset:0;z-index:-1;
+  background:linear-gradient(155deg,#17080be0,transparent 57%,#100c10c9),
+    radial-gradient(ellipse at 90% 20%,#be183b75,transparent 65%),
+    url('/barbell.svg') 72% center/cover no-repeat;
+}
+.landing-heading h1{font-size:clamp(58px,7vw,98px);letter-spacing:-.08em;line-height:.95;margin:0}
+.landing-heading h1 span{color:#ed4264}
+.landing-heading p{color:#dfd8da;margin:12px 0;font-size:16px}
+.landing-caption{display:flex;align-items:center;gap:12px;color:#e2dcde;font-size:13px;font-weight:650}
+.landing-caption b{color:#ec5271}
+.landing-shell .auth-panel{width:100%;padding:clamp(20px,4vw,48px);border:0;border-radius:0;box-shadow:none;align-self:center}
+.landing-shell .auth-top{justify-content:flex-end}
+.auth-form h2{margin:0;font-size:32px}
+@media(max-width:680px){
+  #authGate{align-items:start;padding:16px}
+  .landing-shell{max-width:460px;grid-template-columns:1fr;border-radius:18px}
+  .landing-cover{min-height:150px;padding:20px}
+  .landing-cover::before{background-position:72% 52%}
+  .landing-heading h1{font-size:48px}
+  .landing-heading p{font-size:14px;margin:6px 0}
+  .landing-caption{font-size:11px}
+  .landing-shell .auth-panel{padding:18px 20px 22px}
+  .landing-shell .auth-top{float:right}
+  .landing-shell .auth-form{margin-top:0}
+  .landing-shell .auth-form>p{clear:both;padding-top:6px}
 }
