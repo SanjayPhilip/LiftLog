@@ -1,4 +1,4 @@
-const CACHE='liftlog-training-v25';
+const CACHE='liftlog-training-v26';
 const SDK='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js';
 const SHELL=['/','/index.html','/config.js','/manifest.webmanifest','/barbell.svg','/barbell-scene.js','/icon.svg','/training.js','/training.css','/interface-effects.js','/sessions.js','/sync.js','/substitutions.js','/schedule.js'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>Promise.all([cache.addAll(SHELL),cache.add(SDK).catch(()=>{})])).then(()=>self.skipWaiting())));
