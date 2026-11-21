@@ -218,3 +218,9 @@ header{gap:10px;padding:10px clamp(14px,4vw,36px)}
   .landing-shell .auth-form{margin-top:0}
   .landing-shell .auth-form>p{clear:both;padding-top:6px}
 }
+
+.barbell-scene{position:absolute;left:2%;top:27%;width:96%;height:62%;pointer-events:none;opacity:0}
+.landing-cover.has-barbell::before{background:radial-gradient(ellipse at 85% 21%,#95264177,transparent 64%),linear-gradient(130deg,#151115,#2e252a 58%,#100d10)}
+.has-barbell .barbell-scene{opacity:1}
+.landing-heading,.landing-caption{position:relative}
+@media(max-width:680px){.barbell-scene{left:48%;top:4%;width:52%;height:80%}}
