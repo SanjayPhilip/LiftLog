@@ -30,6 +30,7 @@ function workoutBar(day){
   const last=draft().lastLogged;
   return `<div class="logger-bar" aria-label="Workout actions">
     <select aria-label="Exercise for Add set" id="quickExercise">${day.items.map(([name],i)=>`<option value="${i}">${esc(name)}</option>`).join('')}</select>
+    <button type="button" class="btn secondary" onclick="appendWorkoutExercise(false)">+ Add exercise</button>
     <button class="btn secondary" onclick="quickAdd()">+ Set</button>
     <button class="btn secondary" id="quickUndo" ${last?'':'disabled'} onclick="undoLatest()">Undo</button>
     <button class="btn" onclick="finishWorkout()">Finish workout</button></div>`;
