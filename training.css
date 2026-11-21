@@ -224,3 +224,34 @@ header{gap:10px;padding:10px clamp(14px,4vw,36px)}
 .has-barbell .barbell-scene{opacity:1}
 .landing-heading,.landing-caption{position:relative}
 @media(max-width:680px){.barbell-scene{left:48%;top:4%;width:52%;height:80%}}
+
+/* Adapted from the glass and underline examples at https://prismic.io/blog/css-hover-effects */
+:is(.auth-form,.hero-actions) .btn{position:relative;overflow:hidden}
+.text-action{position:relative}
+.text-action::after{
+  content:"";position:absolute;inset:auto 0 7px;height:2px;
+  background:linear-gradient(90deg,var(--highlight),currentColor);
+  transform:scaleX(0);transform-origin:left;pointer-events:none;
+}
+.text-action:is(:active,:focus-visible)::after{transform:scaleX(1)}
+.btn:enabled:active{filter:brightness(.88)}
+.schedule-grid .schedule-tile:not(.rest-tile):active{border-color:var(--highlight)}
+@media(hover:hover) and (pointer:fine){
+  .schedule-grid:not(.swapping-days):not(:has(.drag-origin)) .schedule-tile:not(.rest-tile):hover{
+    transform:none;border-color:var(--highlight);
+    box-shadow:inset 0 1px #ffffff36,0 0 14px color-mix(in srgb,var(--highlight) 26%,transparent);
+  }
+  .text-action:hover::after{transform:scaleX(1)}
+}
+@media(hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference){
+  :is(.auth-form,.hero-actions) .btn::after{
+    content:"";position:absolute;inset:0;pointer-events:none;
+    background:linear-gradient(110deg,transparent 32%,#ffffff32 50%,transparent 68%);
+    transform:translateX(-110%);
+  }
+  :is(.auth-form,.hero-actions) .btn:enabled:is(:hover,:focus-visible)::after{
+    animation:button-sheen 420ms ease-out both;
+  }
+  .text-action::after{transition:transform 160ms ease-out}
+}
+@keyframes button-sheen{to{transform:translateX(110%)}}
