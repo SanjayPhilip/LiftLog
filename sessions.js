@@ -3,7 +3,11 @@ const localDateKey=(date=new Date())=>`${date.getFullYear()}-${String(date.getMo
 function shiftDate(key,days){const d=new Date(key+'T12:00:00');d.setDate(d.getDate()+days);return localDateKey(d);}
 function weekStart(key){const d=new Date(key+'T12:00:00');return shiftDate(key,-((d.getDay()+6)%7));}
 function validSessionDate(key){return /^\d{4}-\d{2}-\d{2}$/.test(key)&&localDateKey(new Date(key+'T12:00:00'))===key&&key<=localDateKey();}
+const statCache=new WeakMap();
 function sessionStats(session){
+  const plan=sessionPlan(session);
+  const cached=statCache.get(session);
+  if(cached?.plan===plan)return cached.result;
   const result=new Map();
   sessionPlan(session).items.forEach(([name,,range],i)=>{
     const rows=(session.sets?.[i]||[]).filter(row=>row.type!=='warmup'&&validTrainingSet(row)),timed=/sec/i.test(range);
@@ -14,7 +18,7 @@ function sessionStats(session){
       stat.sets++;stat.weight=Math.max(stat.weight,weight);stat.reps=Math.max(stat.reps,reps);
       if(!timed){stat.volume+=weight*reps;if(weight>0&&reps<=12)stat.e1rm=Math.max(stat.e1rm,weight*(1+reps/30));}
     });result.set(key,stat);
-  });return result;
+  });statCache.set(session,{plan,result});return result;
 }
 function recordsForSession(entry,sessions=state.sessions){
   const position=sessions.findIndex(s=>s.id===entry.id),earlier=sessions.filter((s,i)=>s.id!==entry.id&&(s.date<entry.date||(s.date===entry.date&&(position<0||i<position))));
@@ -63,20 +67,25 @@ function startRepeatSession(id){
     const rows=(source.sets?.[i]||[]).filter(validTrainingSet);
     sets[i]=rows.length?rows.map(r=>({weight:String(r.weight),reps:String(r.reps),...(r.type==='warmup'?{type:r.type}:{})})):Array.from({length:Math.max(1,count)},()=>({weight:'',reps:''}));
   });
-  studioEdit=null;state.repeatedWorkout={date:localDateKey(),day:source.day,planSnapshot:plan,sets,notes:'',sourceId:source.id,sourceDate:source.date};
+  studioEdit=null;storeEditorDraft();state.repeatedWorkout={date:localDateKey(),day:source.day,planSnapshot:plan,sets,notes:'',sourceId:source.id,sourceDate:source.date};
   save();switchTab('sessionStudio');
 }
 function startEditSession(id){
   const source=state.sessions.find(s=>s.id===id);if(!source)return;
   if(studioEdit&&!confirm('Discard the unsaved changes to the workout you are editing?'))return;
   studioEdit={original:structuredClone(source),draft:{...structuredClone(source),planSnapshot:structuredClone(sessionPlan(source))}};
-  switchTab('sessionStudio');
+  storeEditorDraft();switchTab('sessionStudio');
+}
+function storeEditorDraft(){
+  if(!cloudUser)return;
+  const key='liftlog_editor_'+cloudUser.id;
+  if(studioEdit)localStorage.setItem(key,JSON.stringify(studioEdit));else localStorage.removeItem(key);
 }
 function studioDraft(){return studioEdit?.draft||state.repeatedWorkout;}
 function updateStudio(field,value,i,j){
   const d=studioDraft();if(!d)return;
   if(field==='weight'||field==='reps'||field==='type')d.sets[i][j][field]=value;else d[field]=value;
-  if(!studioEdit)save();
+  if(studioEdit)storeEditorDraft();else save();
 }
 function studioSetCount(i,removeIndex=null){
   const d=studioDraft();if(!d)return;
@@ -85,7 +94,7 @@ function studioSetCount(i,removeIndex=null){
   if(!studioEdit)save();renderSessionStudio();
 }
 function cancelSessionStudio(){
-  if(studioEdit){if(!confirm('Discard unsaved edits to this workout?'))return;studioEdit=null;}
+  if(studioEdit){if(!confirm('Discard unsaved edits to this workout?'))return;studioEdit=null;storeEditorDraft();}
   // A repeated draft stays available until it is saved or explicitly discarded.
   switchTab('progressPage');
 }
@@ -102,7 +111,7 @@ function saveSessionStudio(){
     if(index<0)return alert('This workout is no longer in your history. Close the editor and reload.');
     if(JSON.stringify(state.sessions[index])!==JSON.stringify(studioEdit.original))return alert('This workout changed while you were editing. Close the editor and reopen it to avoid losing newer changes.');
     const entry={...structuredClone(d),updatedAt:new Date().toISOString()};
-    commitTrainingSession(entry,studioEdit.original.id);studioEdit=null;
+    commitTrainingSession(entry,studioEdit.original.id);studioEdit=null;storeEditorDraft();
   }else{
     const entry={id:crypto.randomUUID(),date:d.date,day:d.day,planSnapshot:structuredClone(d.planSnapshot),sets:structuredClone(d.sets),notes:d.notes,done:{},ranges:{},repeatedFrom:d.sourceId,createdAt:new Date().toISOString()};
     commitTrainingSession(entry);delete state.repeatedWorkout;
@@ -148,11 +157,12 @@ function weeklySummaryHTML(){
 }
 const renderBeforeSessions=render;
 render=function(){
-  const owner=cloudUser?.id||null;if(studioOwner!==owner){studioEdit=null;sessionNotice=null;studioOwner=owner;}
+  const owner=cloudUser?.id||null;if(studioOwner!==owner){try{studioEdit=owner?JSON.parse(localStorage.getItem('liftlog_editor_'+owner)):null}catch{studioEdit=null}sessionNotice=null;studioOwner=owner;}
   if(!$('sessionStudio')){const section=document.createElement('section');section.id='sessionStudio';section.className='hidden';document.querySelector('main').append(section);}
   updateStudioNav();
-  if(tab==='sessionStudio'){renderSessionStudio();return;}
+  if(tab==='sessionStudio'){renderSessionStudio();labelFields($('sessionStudio'));return;}
   renderBeforeSessions();
+  if($(tab))labelFields($(tab));
   if(tab==='dashboard'){
     $('dashboard').insertAdjacentHTML('afterbegin', pendingSessionHTML());
     $('dashboard').insertAdjacentHTML('beforeend', weeklySummaryHTML());

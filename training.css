@@ -376,3 +376,37 @@ header{gap:10px;padding:10px clamp(14px,4vw,36px)}
  .nav-dock .tabs button{padding:8px 2px}
 }
 @media(prefers-reduced-motion:reduce){.hard-card:hover{transform:none}}
+
+html{overscroll-behavior-y:contain}
+body{min-height:100dvh}
+button,input,select,textarea,summary{touch-action:manipulation}
+input:invalid{border-color:#dc5574}
+.unit-picker{display:flex;gap:8px;align-items:center}
+.unit-picker select{width:auto}
+#workout .setrow{grid-template-columns:2em minmax(0,1fr) minmax(0,1fr) minmax(35px,.65fr) 44px}
+.number-step{display:grid;grid-template-columns:1fr 1fr;gap:2px;min-width:0}
+.number-step input{grid-column:1/-1;grid-row:1;text-align:center}
+.number-step button{border:1px solid var(--line);border-radius:7px;background:var(--surface2);color:var(--ink);min-height:44px}
+.logger-bar{position:sticky;bottom:0;z-index:4;display:flex;align-items:center;gap:6px;flex-wrap:wrap;border:1px solid var(--line);border-radius:14px;padding:8px;background:var(--surface);box-shadow:0 -4px 20px #0003}
+.logger-bar select{flex:1;min-width:95px;width:auto}
+.history-window{overflow:auto;max-height:384px;overscroll-behavior:contain}
+.history-space{position:relative}
+.history-space>div{position:absolute;inset:0 0 auto}
+.history-space button{height:64px;width:100%;text-align:start;padding:8px 12px;background:var(--surface);color:var(--ink);border:0;border-bottom:1px solid var(--line)}
+.skeleton{min-height:140px;background:linear-gradient(110deg,var(--surface),var(--surface2),var(--surface))}
+@media(max-width:899px){
+  input,select,textarea{font-size:16px}
+  button,.btn.small,.setrow input,summary,select{min-height:44px}
+  input[type=checkbox]{width:24px;height:24px;margin:10px;outline-offset:8px}
+  #workout .setrow{grid-template-columns:1.55em minmax(90px,1fr) minmax(90px,1fr) minmax(31px,.5fr) 44px;gap:3px}
+  #workout .card{padding-inline:10px}
+  .logger-bar{bottom:calc(62px + env(safe-area-inset-bottom));scroll-margin-bottom:110px}
+  #workout input,#workout button{scroll-margin-bottom:155px}
+  .logger-bar .btn{padding-inline:9px}
+}
+
+@media(max-width:899px){
+  button:not(.desktop-menu),.btn.small,.setrow button,.set-action .btn{min-width:44px;min-height:44px}
+  input[type=checkbox]{width:44px;height:44px;margin:0;max-width:100%}
+  .setrow input{padding-inline:2px}
+}
