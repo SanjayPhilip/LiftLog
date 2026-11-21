@@ -11,7 +11,7 @@ function workoutImageHTML() {
   const match = day.items.map(([name]) => movements.find(([pattern]) => pattern.test(name))).find(Boolean);
   const [,label,folder] = match || [null,'Bench press','Barbell_Bench_Press_-_Medium_Grip'];
   const base = 'https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/'+folder+'/';
-  return `<details class="card workout-photos"><summary>${label} photo study</summary>
+  return `<details class="card workout-photos" open><summary>${label} photo study</summary>
     <div class="dual-stage">
       <img src="${base}0.jpg" loading="lazy" alt="${label} starting position">
       <img src="${base}1.jpg" loading="lazy" alt="${label} finishing position">
@@ -20,30 +20,42 @@ function workoutImageHTML() {
 function profileVisual(p) {
   return `<details class="card athlete-card"><summary><span class="athlete-front">${esc(p.name || 'Athlete profile')}</span></summary>
     <p>${esc(p.height || '—')} cm · ${esc(p.weight || '—')} kg · ${esc(p.goal || 'Training')}</p></details>
-    <details class="card scan-card"><summary>Profile X-ray</summary><div class="scan-stage" role="img" aria-label="Illustrated body and skeleton with adjustable scan window">
+    <section class="card scan-card" data-mode="auto"><h3>Profile X-ray</h3><div class="scan-stage" role="img" aria-label="Illustrated body and skeleton with adjustable scan window">
     <svg viewBox="0 0 120 200" aria-hidden="true">
       <ellipse cx="60" cy="22" rx="13" ry="17" fill="#c7a3a3"/>
       <path d="M47 41 Q60 46 73 41 L83 47 98 95 92 101 76 67 73 100 78 119 72 182 76 192 64 192 60 128 56 192 44 192 48 181 42 119 47 99 44 67 28 101 22 95 37 47Z" fill="#996773"/>
-      <g class="scan-bones" fill="none" stroke="#e7f7ff" stroke-width="3" stroke-linecap="round">
-      <ellipse cx="60" cy="21" rx="10" ry="13" fill="#9eb8c6"/><path d="M54 20h2m8 0h2" stroke="#354454"/>
+      <defs><clipPath id="profileScanClip" clipPathUnits="userSpaceOnUse"><rect class="scan-window" width="120" height="48" y="76"/></clipPath></defs>
+      <g clip-path="url(#profileScanClip)"><rect width="120" height="200" fill="#111c29"/><g class="scan-bones" fill="none" stroke="#e7f7ff" stroke-width="3" stroke-linecap="round">
+      <path d="M50 24Q45 7 59 7Q74 7 71 23L66 28L65 34H55L54 28Z" fill="#bdd5dd"/>
+      <path d="M52 20q3-4 6 0m4 0q3-4 6 0m-8 3-2 4h4" stroke="#233345"/>
+      <path d="M52 100q-8 0-5 8l9 7h8l9-7q3-8-5-8l-8 4z" fill="#9eb8c6"/>
+      <path d="M32 76l-4 17m60-17 4 17m-41 59 1 29m16-29-1 29" stroke-width="1.5"/><path d="M54 20h2m8 0h2" stroke="#354454"/>
       <path d="M60 35v71m-18-56 18-6 18 6m-36 2-8 23-7 19m51-42 8 23 7 19m-45 8 12 9 12-9m-24 0 3 12 9 5 9-5 3-12m-20 16 1 35-3 31m18-66-1 35 3 31"/>
       ${[0,1,2,3,4].map(i=>`<path d="M46 ${51+i*6} Q60 ${61+i*6} 74 ${51+i*6}"/>`).join('')}</g>
+      </g><g class="scan-lines" aria-hidden="true" stroke="#86d6e7" stroke-width=".65"><path d="M0 0h120M0 48h120"/></g>
     </svg></div><label>Scan position <input class="scan-range" type="range" min="0" max="100" value="50"></label>
-    <button type="button" class="btn small secondary" data-scan="body">Body</button>
-    <button type="button" class="btn small secondary" data-scan="full">Full X-ray</button></details>`;
+    <button type="button" class="btn small secondary" data-scan="auto" aria-pressed="true">Auto scan</button>
+    <button type="button" class="btn small secondary" data-scan="body" aria-pressed="false">Body</button>
+    <button type="button" class="btn small secondary" data-scan="full" aria-pressed="false">Full X-ray</button></section>`;
 }
 
+function setScanMode(card,mode){
+  card.dataset.mode=mode;
+  card.querySelectorAll('[data-scan]').forEach(button=>{
+    button.setAttribute('aria-pressed',String(button.dataset.scan===mode));
+  });
+}
 document.addEventListener('input', event => {
   if(event.target.matches('.dual-range')) event.target.closest('.workout-photos').style.setProperty('--split',event.target.value+'%');
   if(event.target.matches('.scan-range')){
     const card=event.target.closest('.scan-card');
-    card.dataset.mode='scan';
-    card.style.setProperty('--scan',event.target.value+'%');
+    setScanMode(card,'manual');
+    card.style.setProperty('--scan-y',(Number(event.target.value)*1.52-76)+'px');
   }
 });
 document.addEventListener('click', event => {
   const mode=event.target.closest('[data-scan]');
-  if(mode) mode.closest('.scan-card').dataset.mode=mode.dataset.scan;
+  if(mode) setScanMode(mode.closest('.scan-card'),mode.dataset.scan);
 });
 document.addEventListener('pointermove', event => {
   if(event.pointerType!=='mouse')return;
@@ -52,9 +64,9 @@ document.addEventListener('pointermove', event => {
   const rect=stage.getBoundingClientRect();
   if(stage.matches('.scan-stage')){
     const card=stage.closest('.scan-card');
-    if(['body','full'].includes(card.dataset.mode))return;
+    if(card.dataset.mode!=='manual')return;
     const value=Math.round(100*(event.clientY-rect.top)/rect.height);
-    card.style.setProperty('--scan',value+'%');
+    card.style.setProperty('--scan-y',(value*1.52-76)+'px');
     card.querySelector('input').value=value;
   }else{
     const value=event.clientX<rect.left+rect.width/2?75:25;
@@ -110,6 +122,7 @@ function markTab(button=menu.querySelector('button.active')){
 menu.addEventListener('pointerover',e=>markTab(e.target.closest('button')||undefined));
 menu.addEventListener('pointerleave',()=>markTab());
 menu.addEventListener('focusin',e=>markTab(e.target.closest('button')||undefined));
+menu.addEventListener('focusout',e=>{if(!menu.contains(e.relatedTarget))markTab()});
 menu.addEventListener('click',()=>{markTab();if(desktop.matches){menuButton.focus();openDesktopMenu(false)}});
 new ResizeObserver(()=>markTab()).observe(menu);
 new MutationObserver(()=>markTab()).observe(menu,{subtree:true,childList:true,attributes:true,attributeFilter:['class']});
