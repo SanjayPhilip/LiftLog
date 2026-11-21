@@ -120,7 +120,7 @@ function renderSessionStudio(){
   }).join('')}<label for="studioNotes">Session notes</label><textarea id="studioNotes" rows="3" oninput="updateStudio('notes',this.value)">${esc(d.notes||'')}</textarea><div class="session-actions"><button type="button" class="btn" onclick="saveSessionStudio()">${editing?'Save changes':'Save repeated workout'}</button>${!editing?'<button type="button" class="btn secondary" onclick="discardRepeatSession()">Discard draft</button>':''}</div></div>`;
 }
 function updateStudioNav(){
-  let button=$('studioNav');if(!button){button=document.createElement('button');button.id='studioNav';button.dataset.tab='sessionStudio';button.textContent='Draft';button.onclick=()=>switchTab('sessionStudio');document.querySelector('.tabs').append(button);}
+  let button=$('studioNav');if(!button){button=document.createElement('button');button.id='studioNav';button.dataset.tab='sessionStudio';button.innerHTML='<span class="nav-icon" aria-hidden="true">✎</span><span class="nav-label">Draft</span>';button.onclick=()=>switchTab('sessionStudio');document.querySelector('.tabs').append(button);}
   button.classList.toggle('hidden',!studioDraft());button.classList.toggle('active',tab==='sessionStudio');
 }
 function pendingSessionHTML(){return studioDraft()?`<div class="card"><div class="row wrap"><div><h3>${studioEdit?'Unsaved workout edits':'Repeated workout in progress'}</h3><p class="muted">${esc(studioDraft().planSnapshot.name)} · ${esc(studioDraft().date)}</p></div><button class="btn secondary" onclick="switchTab('sessionStudio')">Continue ${studioEdit?'editing':'workout'}</button></div></div>`:'';}

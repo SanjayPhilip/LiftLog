@@ -65,15 +65,17 @@ function scheduleTilesHTML() {
       onclick="scheduleClick(${weekday})">
       <span class="schedule-weekday">${scheduleWeekdays[weekday].slice(0, 3).toUpperCase()} ${weekday === today ? '<i>Today</i>' : ''}</span>
       <span class="schedule-grip" aria-hidden="true">⠿</span>
-      <span class="schedule-name">${rest ? 'Recovery' : esc(day.name)}</span>
-      <span class="schedule-meta">${rest ? 'Rest day' : `${day.items.length} exercises`}</span>
+      <span class="tile-turn"><span class="tile-front"><span class="schedule-name">${rest ? 'Recovery' : esc(day.name)}</span>
+      <span class="schedule-meta">${rest ? 'Rest day' : `${day.items.length} exercises`}</span></span>
+        <span class="tile-back">${rest ? 'Recovery between training days.' : esc(day.items.slice(0,2).map(item=>item[0]).join(' · ') || day.name)}</span>
+      </span>
     </button>`;
   }).join('');
 }
 
 function scheduleHTML() {
   return `<div id="weeklySchedule"><div class="section-head elevated schedule-heading">
-    <h2>Weekly schedule</h2>
+    <h2>Weekly schedule</h2><label class="tile-detail-control"><input type="checkbox" class="tile-detail-toggle"> Workout details</label>
     <button type="button" id="scheduleSwap" class="btn secondary" aria-pressed="${swappingDays}" onclick="toggleDaySwap()">${swappingDays ? 'Done swapping' : 'Swap days'}</button>
   </div>
   <p class="schedule-intro" id="scheduleStatus" role="status">${scheduleNotice || (swappingDays ? 'Drag a card onto another day, or tap two cards to swap.' : 'Drag a handle to swap days, or tap a training day to open its workout.')}</p>
