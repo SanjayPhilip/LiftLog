@@ -54,7 +54,7 @@ function setWorkoutTarget(index,value){
   save();
 }
 function prefillExercise(i,overwrite=false) {
-  const [name,count]=PLAN[state.day].items[i],last=lastExercise(name),d=draft();
+  const [name,count]=activeWorkoutPlan().items[i],last=lastExercise(name),d=draft();
   if(!last||(!overwrite&&Object.hasOwn(d.sets,i)))return false;
   const warmups=(d.sets[i]||[]).filter(row=>row.type==='warmup');
   d.sets[i]=warmups.concat(Array.from({length:count},(_,j)=>{
@@ -67,7 +67,7 @@ function copyPrevious(i) {
   if(prefillExercise(i,true)){delete draft().lastLogged;draft().done[i]=false;save();render();}
 }
 function addWarmupSet(i){
-  const d=draft(),count=PLAN[state.day].items[i][1];
+  const d=draft(),count=activeWorkoutPlan().items[i][1];
   delete d.lastLogged;
   d.sets[i]??=Array.from({length:count},()=>({weight:'',reps:''}));
   const firstWorking=d.sets[i].findIndex(row=>row.type!=='warmup');
@@ -96,7 +96,7 @@ function toggleWorkoutSet(i,j){
   action.closest('.exercise').querySelector('input[type=checkbox]').checked=d.done[i];
   action.textContent=undo?'Done':'✓ Done · Undo';
   action.classList.toggle('secondary',!undo);
-  action.setAttribute('aria-label',(undo?'Complete':'Undo')+' set '+(j+1)+' for '+PLAN[state.day].items[i][0]);
+  action.setAttribute('aria-label',(undo?'Complete':'Undo')+' set '+(j+1)+' for '+activeWorkoutPlan().items[i][0]);
   const count=doneCount(d),pct=Math.round(100*count/Math.max(1,totalExercises()));
   const progress=document.querySelector('#workout .progress');
   progress.firstElementChild.style.width=pct+'%';
@@ -126,19 +126,19 @@ function completedWorkoutSets(sets){
     .map(({weight,reps,type})=>type==='warmup'?{weight,reps,type}:{weight,reps})]));
 }
 previous=function(i,j){
-  const last=lastExercise(PLAN[state.day]?.items[i]?.[0]),row=last?.rows[j];
+  const last=lastExercise(activeWorkoutPlan()?.items[i]?.[0]),row=last?.rows[j];
   return row?`${esc(row.weight)}×${esc(row.reps)}`:'—';
 };
 const workoutWithTimer=workout;
 workout=function(){
   loggerHistory=new Map();
   let changed=false;
-  PLAN[state.day].items.forEach((_,i)=>{changed=prefillExercise(i)||changed;});
+  activeWorkoutPlan().items.forEach((_,i)=>{changed=prefillExercise(i)||changed;});
   if(changed)save();
   workoutWithTimer();
   $('restTime')?.closest('.card')?.insertAdjacentHTML('beforeend','<span id="setCompletionStatus" class="muted" role="status"></span>');
   document.querySelectorAll('#workout .exercise').forEach((el,i)=>{
-    const [name,count,range]=PLAN[state.day].items[i],last=lastExercise(name);
+    const [name,count,range]=activeWorkoutPlan().items[i],last=lastExercise(name);
     const hint=document.createElement('div');hint.className='hint';
     const target=targetAdvice(name,draft().ranges[i]??range,count);
     const override=draft().targets?.[i]??'';
