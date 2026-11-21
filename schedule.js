@@ -45,24 +45,22 @@ function scheduleTilesHTML() {
       data-schedule-day="${weekday}" ${swappingDays ? 'aria-pressed="false"' : rest ? 'tabindex="-1"' : ''}
       aria-label="${scheduleWeekdays[weekday]}, ${esc(rest ? 'Recovery, rest day' : day.name)}"
       onclick="scheduleClick(${weekday})">
-      <span class="schedule-weekday">${scheduleWeekdays[weekday].slice(0, 3).toUpperCase()} ${weekday === today ? '<i>NOW</i>' : ''}</span>
+      <span class="schedule-weekday">${scheduleWeekdays[weekday].slice(0, 3).toUpperCase()} ${weekday === today ? '<i>Today</i>' : ''}</span>
       <span class="schedule-grip" aria-hidden="true">⠿</span>
-      <span class="schedule-number">${rest ? '✳' : String(workoutId + 1).padStart(2, '0')}</span>
       <span class="schedule-name">${rest ? 'Recovery' : esc(day.name)}</span>
-      <span class="schedule-meta">${rest ? 'REST DAY' : `${day.items.length} EXERCISES`}</span>
-      <span class="schedule-arrow" aria-hidden="true">${swappingDays ? '↔' : rest ? '—' : '↗'}</span>
+      <span class="schedule-meta">${rest ? 'Rest day' : `${day.items.length} exercises`}</span>
     </button>`;
   }).join('');
 }
 
 function scheduleHTML() {
   return `<div id="weeklySchedule"><div class="section-head elevated schedule-heading">
-    <div><div class="eyebrow">WEEKLY SPLIT</div><h2>Your schedule<span class="wordmark-dot">.</span></h2></div>
+    <h2>Weekly schedule</h2>
     <button type="button" id="scheduleSwap" class="btn secondary" aria-pressed="${swappingDays}" onclick="toggleDaySwap()">${swappingDays ? 'Done swapping' : 'Swap days'}</button>
   </div>
   <p class="schedule-intro" id="scheduleStatus" role="status">${scheduleNotice || (swappingDays ? 'Drag a card onto another day, or tap two cards to swap.' : 'Drag a handle to swap days, or tap a training day to open its workout.')}</p>
   <div class="schedule-grid ${swappingDays ? 'swapping-days' : ''}">${scheduleTilesHTML()}</div>
-  <button type="button" class="text-action" onclick="switchTab('profile');openPlanEditor()">Customize plan ↗</button></div>`;
+  <button type="button" class="text-action" onclick="switchTab('profile');openPlanEditor()">Edit workout plan</button></div>`;
 }
 
 function toggleDaySwap() {
