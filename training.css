@@ -33,19 +33,19 @@
 }
 :root:not([data-theme="light"]){
   color-scheme:dark;
-  --bg:#0b0a0e;
-  --surface:#15131a;
-  --surface2:#1b1821;
-  --ink:#eeebf3;
-  --muted:#aaa4b6;
-  --line:#9d8db238;
-  --accent:#c1add4;
-  --accent-ink:#211828;
-  --soft:#211b2a;
-  --highlight:#9580ae;
-  --ambient:#5e436e;
-  --glass:linear-gradient(150deg,#231d2aba,#141217eb 75%);
-  --glass-shadow:0 12px 32px #0003,inset 0 1px #d8bbe313;
+  --bg:#080808;
+  --surface:#151515;
+  --surface2:#202020;
+  --ink:#f0f0f0;
+  --muted:#ababab;
+  --line:#ffffff28;
+  --accent:#dedede;
+  --accent-ink:#121212;
+  --soft:#303030;
+  --highlight:#b3b3b3;
+  --ambient:#656565;
+  --glass:linear-gradient(150deg,#303030bd,#121212e6 75%);
+  --glass-shadow:0 12px 32px #0003,inset 0 1px #ffffff18;
 }
 body{
   background:radial-gradient(ellipse 680px 410px at 80% 0%,color-mix(in srgb,var(--ambient) 17%,transparent),transparent),var(--bg);
@@ -163,4 +163,18 @@ header{gap:10px;padding:10px clamp(14px,4vw,36px)}
   header{gap:7px}
   .tabs button{font-size:10px}
   .schedule-heading .btn{padding-inline:9px}
+}
+
+:root:not([data-theme="light"]) :is(.hero,.card,.stat-card,.schedule-grid){
+  backdrop-filter:blur(9px);
+}
+:root:not([data-theme="light"]) .btn:not(.secondary):not(.danger){
+  background:linear-gradient(#efefef,#c6c6c6);
+}
+:root:not([data-theme="light"]) .schedule-tile.chosen{
+  box-shadow:inset 3px 0 var(--highlight);
+}
+@media(prefers-reduced-transparency:reduce){
+  :root:not([data-theme="light"]) {--glass:var(--surface)}
+  :root:not([data-theme="light"]) :is(.hero,.card,.stat-card,.schedule-grid,.tabs,header,.auth-panel){backdrop-filter:none}
 }

@@ -6,9 +6,29 @@ let scheduleNotice = '';
 
 
 function weeklySchedule(week = weekStart(localDateKey())) {
-  const base = [0, 1, 2, -1, 3, 4, -1].map(day => day < PLAN.length ? day : -1);
+  const template = PLAN.length >= 7 ? [0, 1, 2, 3, 4, 5, 6] : [0, 1, 2, -1, 3, 4, PLAN.length === 6 ? 5 : -1];
+  const base = template.map(day => day < PLAN.length ? day : -1);
   const saved = state.weekSchedules?.[week];
   const days = saved?.days;
+  const names = scheduleNames(saved);
+  const sameSplit = Array.isArray(names) && names.length === PLAN.length &&
+    names.every((name, index) => name === PLAN[index].name);
+  if (sameSplit && Array.isArray(days) && days.length === base.length &&
+      days.every(Number.isInteger) && [...days].sort().join() === [...base].sort().join()) {
+    return [...days];
+  }
+  // Older releases left two recovery slots even on six- and seven-day plans.
+  if (sameSplit && PLAN.length >= 6 && Array.isArray(days) && days.length === 7 &&
+      days.every(Number.isInteger) && [...days].sort().join() === '-1,-1,0,1,2,3,4') {
+    const migrated = [...days];
+    migrated[migrated.lastIndexOf(-1)] = 5;
+    if (PLAN.length >= 7) migrated[migrated.indexOf(-1)] = 6;
+    return migrated;
+  }
+  return base;
+}
+
+function scheduleNames(saved) {
   let names = saved?.names;
   if (!names && typeof saved?.plan === 'string') {
     try {
@@ -17,21 +37,19 @@ function weeklySchedule(week = weekStart(localDateKey())) {
       // An unreadable legacy schedule falls back to the default order.
     }
   }
-  const sameSplit = Array.isArray(names) && names.length === PLAN.length &&
-    names.every((name, index) => name === PLAN[index].name);
-  if (sameSplit && Array.isArray(days) && days.length === base.length &&
-      days.every(Number.isInteger) && [...days].sort().join() === [...base].sort().join()) {
-    return [...days];
-  }
-  return base;
+  return names;
 }
 
 function progressScheduleHTML(week) {
   const currentWeek = week === weekStart(localDateKey());
   if (!currentWeek && !state.weekSchedules?.[week]) return '';
-  const days = weeklySchedule(week);
+  const saved = state.weekSchedules?.[week];
+  const names = currentWeek ? PLAN.map(day => day.name) : scheduleNames(saved);
+  const days = currentWeek ? weeklySchedule(week) : saved?.days;
+  if (!Array.isArray(names) || !Array.isArray(days) || days.length !== 7 ||
+      !days.every(day => Number.isInteger(day) && day >= -1 && day < names.length)) return '';
   return `<h3>Planned schedule</h3><ul class="progress-schedule">${days.map((day, index) =>
-    `<li><strong>${scheduleWeekdays[index]}</strong><span>${day < 0 ? 'Recovery' : esc(PLAN[day].name)}</span></li>`
+    `<li><strong>${scheduleWeekdays[index]}</strong><span>${day < 0 ? 'Recovery' : esc(names[day])}</span></li>`
   ).join('')}</ul>`;
 }
 
@@ -122,7 +140,8 @@ function scheduleClick(index) {
   }
   const day = weeklySchedule()[index];
   if (day < 0) return;
-  changeDay(day);
+  state.day = day;
+  save();
   switchTab('workout');
 }
 
