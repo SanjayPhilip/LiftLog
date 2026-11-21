@@ -1,22 +1,4 @@
 /* Interaction references: https://prismic.io/blog/css-hover-effects */
-function workoutImageHTML() {
-  const movements = [
-    [/incline barbell press|barbell incline bench/i,'Incline barbell press','Barbell_Incline_Bench_Press_-_Medium_Grip'],
-    [/barbell squat|^squats?$/i,'Barbell squat','Barbell_Squat'],
-    [/pull.?ups?/i,'Pull-up','Pullups'],
-    [/dumbbell shoulder press/i,'Dumbbell shoulder press','Dumbbell_Shoulder_Press'],
-    [/flat dumbbell press|dumbbell bench press/i,'Dumbbell bench press','Dumbbell_Bench_Press']
-  ];
-  const day = PLAN[state.day];
-  const match = day.items.map(([name]) => movements.find(([pattern]) => pattern.test(name))).find(Boolean);
-  const [,label,folder] = match || [null,'Bench press','Barbell_Bench_Press_-_Medium_Grip'];
-  const base = 'https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@f00c92c7dcf1216a928a52c3706c7ce8e2f71ed5/exercises/'+folder+'/';
-  return `<details class="card workout-photos" open><summary>${label} photo study</summary>
-    <div class="dual-stage">
-      <img src="${base}0.jpg" loading="lazy" alt="${label} starting position">
-      <img src="${base}1.jpg" loading="lazy" alt="${label} finishing position">
-    </div><label>Compare positions <input class="dual-range" type="range" min="25" max="75" value="50"></label></details>`;
-}
 function profileVisual(p) {
   return `<details class="card athlete-card"><summary><span class="athlete-front">${esc(p.name || 'Athlete profile')}</span></summary>
     <p>${esc(p.height || '—')} cm · ${esc(p.weight || '—')} kg · ${esc(p.goal || 'Training')}</p></details>
