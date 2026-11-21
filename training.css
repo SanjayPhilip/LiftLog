@@ -255,3 +255,91 @@ header{gap:10px;padding:10px clamp(14px,4vw,36px)}
   .text-action::after{transition:transform 160ms ease-out}
 }
 @keyframes button-sheen{to{transform:translateX(110%)}}
+
+/* LiftLog interactions based on the examples collected by Prismic. */
+.stat-card{position:relative;overflow:hidden;isolation:isolate}
+.hard-card{min-height:108px}
+.hard-card summary,.athlete-card summary{cursor:pointer;list-style:none}
+.hard-card summary::-webkit-details-marker,.athlete-card summary::-webkit-details-marker{display:none}
+.hard-card summary span{display:block;color:var(--muted);font-size:12px}
+.hard-card summary{position:relative;z-index:1;background:var(--glass);padding:10px;border-radius:10px;transition:transform .23s}
+.hard-card[open] summary{transform:scale(.93);transform-origin:top left}
+.hard-card[open] p,.athlete-card[open] p{font-size:13px;margin:3px 10px 8px;color:var(--ink)}
+.hard-card::before,.landing-cover::after{
+  content:"";position:absolute;inset:-80%;pointer-events:none;opacity:0;
+  background:linear-gradient(122deg,transparent 36%,#ff496c33 44%,#9ae9ff44 50%,#dab7ff44 55%,transparent 63%);
+  transform:translateX(-35%) rotate(-9deg);
+}
+.hard-card:is(:hover,[open],:focus-within)::before,.landing-cover:hover::after{
+  animation:foil-travel 1050ms ease-out both;
+}
+@keyframes foil-travel{0%{opacity:0}35%{opacity:1}100%{opacity:0;transform:translateX(40%) rotate(9deg)}}
+.hard-card:is(:hover,[open]),.athlete-card:is(:hover,[open]){border-color:var(--highlight);box-shadow:0 0 18px color-mix(in srgb,var(--highlight) 28%,transparent)}
+.text-action::before{content:"";position:absolute;inset:7px 0 auto;height:2px;background:linear-gradient(90deg,currentColor,var(--highlight));transform:scaleX(0);transform-origin:right;transition:transform .16s}
+.text-action:is(:hover,:focus-visible,:active)::before{transform:scaleX(1)}
+.tile-detail-control{display:inline-flex;align-items:center;gap:7px;color:var(--muted);font-size:13px;margin-left:auto;min-height:44px}
+.tile-detail-control input{width:18px;height:18px}
+.tile-turn{display:grid;align-self:stretch;flex:1;margin-top:8px;transform-style:preserve-3d;transition:transform .42s}
+.tile-front,.tile-back{grid-area:1/1;display:flex;flex-direction:column;justify-content:center;backface-visibility:hidden}
+.tile-back{transform:rotateY(180deg);font-size:12px;font-weight:600;overflow-wrap:anywhere}
+.schedule-grid .schedule-tile{perspective:650px}
+#weeklySchedule:has(.tile-detail-toggle:checked) .schedule-grid:not(.swapping-days) .tile-turn{transform:rotateY(180deg)}
+@media(hover:hover) and (pointer:fine){
+  .schedule-grid:not(.swapping-days):not(:has(.drag-origin)) .schedule-tile:not(.rest-tile):hover .tile-turn{transform:rotateY(180deg)}
+}
+.athlete-card{position:relative;text-align:center;padding:0;overflow:hidden}
+.athlete-front{display:block;padding:18px;font-weight:800;background:var(--glass);transition:transform .25s}
+.athlete-card[open] .athlete-front{transform:translateY(-5px)}
+.athlete-card[open] p{animation:profile-slide .24s ease-out}
+@keyframes profile-slide{from{transform:translateY(-16px);opacity:0}}
+.scan-card summary,.workout-photos summary{cursor:pointer;font-weight:700;min-height:32px}
+.scan-card label,.workout-photos label{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:13px}
+.scan-card input,.workout-photos input{width:min(180px,48%);accent-color:var(--highlight)}
+.scan-stage{height:200px;margin:12px auto;background:radial-gradient(ellipse,#39262d,#141419 72%);border-radius:12px;position:relative;overflow:hidden}
+.scan-stage svg{width:100%;height:100%;display:block}
+.scan-bones{clip-path:inset(calc(var(--scan,50%) - 15%) 0 calc(85% - var(--scan,50%)) 0)}
+.scan-stage::after{content:"";position:absolute;inset:calc(var(--scan,50%) - 15%) 0 auto;height:30%;border-block:1px solid #87d7ff88;background:#79d5ff16;pointer-events:none}
+.scan-card[data-mode=full] .scan-bones{clip-path:none}
+.scan-card[data-mode=body] .scan-bones,.scan-card:is([data-mode=body],[data-mode=full]) .scan-stage::after{display:none}
+.dual-stage{position:relative;height:clamp(165px,30vw,290px);margin:12px 0;border-radius:12px;overflow:hidden;background:#202024}
+.dual-stage img{position:absolute;width:100%;height:100%;object-fit:contain;background:#202024;transition:clip-path .25s}
+.dual-stage img:first-child{object-position:18% center;clip-path:polygon(0 0,calc(var(--split,50%) + 12%) 0,calc(var(--split,50%) - 12%) 100%,0 100%)}
+.dual-stage img:last-child{object-position:82% center;clip-path:polygon(calc(var(--split,50%) + 12%) 0,100% 0,100% 100%,calc(var(--split,50%) - 12%) 100%)}
+.desktop-menu{display:none}
+.tabs .nav-label{display:block;font:inherit;margin:0}
+.tabs button{isolation:isolate;position:relative}
+.tabs button::before,.tabs button::after{content:"";position:absolute;inset:1px;pointer-events:none;z-index:-1;transform:scaleX(0);transition:transform .2s}
+.tabs button::before{border-block:1px solid var(--highlight)}
+.tabs button::after{background:linear-gradient(115deg,transparent,color-mix(in srgb,var(--highlight) 32%,transparent));transform-origin:left}
+.tabs button:is(:hover,:focus-visible)::before,.tabs button:is(:hover,:focus-visible)::after{transform:scaleX(1)}
+.nav-marker{height:2px;background:var(--highlight);pointer-events:none;position:absolute;left:0;top:0;transition:transform .22s,width .22s}
+@media(min-width:900px){
+ .nav-dock{position:fixed;top:82px;left:0;z-index:8}
+ .desktop-menu{display:grid;align-content:center;justify-content:center;gap:4px;width:48px;height:80px;border:1px solid var(--line);border-radius:0 12px 12px 0;background:var(--surface);color:var(--ink);position:relative;z-index:1}
+ .desktop-menu i{width:20px;height:2px;background:currentColor;transition:transform .22s,opacity .22s}
+ .desktop-menu span{position:absolute;inset:0;display:grid;place-items:center;opacity:0;transform:rotate(-90deg);font-weight:700}
+ .menu-open .desktop-menu i{opacity:0;transform:translateY(4px)}
+ .menu-open .desktop-menu i:nth-child(2){opacity:.3;transform:scaleY(18)}
+ .menu-open .desktop-menu span{opacity:1}
+ .nav-dock .tabs{display:flex;position:absolute;left:48px;top:0;right:auto;bottom:auto;flex-direction:column;align-items:stretch;width:168px;min-height:0;padding:6px;background:var(--surface);border:1px solid var(--line);border-radius:12px;opacity:0;visibility:hidden;transform:translateX(-18px);transition:transform .24s,opacity .24s,visibility .24s}
+ .menu-open .tabs{opacity:1;visibility:visible;transform:none}
+ .nav-dock .tabs button{width:100%;min-height:44px;max-width:none;display:grid;place-items:center}
+ .tabs .nav-icon,.tabs .nav-label{grid-area:1/1;transition:transform .2s,opacity .2s}
+ .tabs .nav-icon{justify-self:start;margin:0 0 0 10px}
+ .tabs button:is(:hover,:focus-visible) .nav-icon{transform:scale(0);opacity:0}
+ .tabs button:is(:hover,:focus-visible) .nav-label{transform:scale(1.12);text-shadow:0 0 12px var(--highlight)}
+ .menu-open .tabs button{animation:nav-enter .22s backwards}
+ .menu-open .tabs button:nth-child(2){animation-delay:.035s}.menu-open .tabs button:nth-child(3){animation-delay:.07s}.menu-open .tabs button:nth-child(n+4){animation-delay:.1s}
+ main{padding-inline-start:max(58px,4vw)}
+}
+@keyframes nav-enter{from{opacity:0;transform:translateX(-12px)}}
+@media(prefers-reduced-motion:reduce){.hard-card::before,.landing-cover::after{animation:none!important}}
+
+.hero,.landing-shell{isolation:isolate;position:relative}
+.hero::before,.landing-shell::before{content:"";position:absolute;z-index:-1;inset:4px 8%;border-radius:inherit;pointer-events:none;opacity:0;background:linear-gradient(115deg,#ba183f55,transparent 53%,#d8a2ae33);transform:skewX(-14deg);filter:blur(9px);transition:opacity .24s,transform .3s}
+:is(.hero,.landing-shell):is(:hover,:focus-within)::before{opacity:1;transform:skewX(0)}
+.nav-dock .tabs button.hidden{display:none}
+@media(min-width:900px){
+ .desktop-menu i:last-of-type{transform-origin:center}
+ .menu-open .desktop-menu i:last-of-type{transform:translateY(-4px)}
+}
