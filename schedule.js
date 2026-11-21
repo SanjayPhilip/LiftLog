@@ -53,6 +53,12 @@ function progressScheduleHTML(week) {
   ).join('')}</ul>`;
 }
 
+function workoutDescription(day) {
+  if (!day.items.length) return 'No exercises scheduled yet.';
+  const sets = day.items.reduce((sum,entry) => sum + (Number(entry[1]) || 0), 0);
+  const first = day.items[0][0];
+  return `${sets} sets across ${day.items.length} ${day.items.length === 1 ? 'exercise' : 'exercises'}. Start with ${first}.`;
+}
 function scheduleTilesHTML() {
   const today = (new Date().getDay() + 6) % 7;
   return weeklySchedule().map((workoutId, weekday) => {
@@ -67,7 +73,7 @@ function scheduleTilesHTML() {
       <span class="schedule-grip" aria-hidden="true">⠿</span>
       <span class="tile-turn"><span class="tile-front"><span class="schedule-name">${rest ? 'Recovery' : esc(day.name)}</span>
       <span class="schedule-meta">${rest ? 'Rest day' : `${day.items.length} exercises`}</span></span>
-        <span class="tile-back">${rest ? 'Recovery between training days.' : esc(day.items.slice(0,2).map(item=>item[0]).join(' · ') || day.name)}</span>
+        <span class="tile-back">${rest ? 'Recovery between training days.' : esc(workoutDescription(day))}</span>
       </span>
     </button>`;
   }).join('');

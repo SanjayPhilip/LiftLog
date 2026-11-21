@@ -297,10 +297,17 @@ header{gap:10px;padding:10px clamp(14px,4vw,36px)}
 .scan-card input,.workout-photos input{width:min(180px,48%);accent-color:var(--highlight)}
 .scan-stage{height:200px;margin:12px auto;background:radial-gradient(ellipse,#39262d,#141419 72%);border-radius:12px;position:relative;overflow:hidden}
 .scan-stage svg{width:100%;height:100%;display:block}
-.scan-bones{clip-path:inset(calc(var(--scan,50%) - 15%) 0 calc(85% - var(--scan,50%)) 0)}
-.scan-stage::after{content:"";position:absolute;inset:calc(var(--scan,50%) - 15%) 0 auto;height:30%;border-block:1px solid #87d7ff88;background:#79d5ff16;pointer-events:none}
-.scan-card[data-mode=full] .scan-bones{clip-path:none}
-.scan-card[data-mode=body] .scan-bones,.scan-card:is([data-mode=body],[data-mode=full]) .scan-stage::after{display:none}
+/* The scanning window and its two edge lines use the same SVG coordinates. */
+.scan-card .scan-window,.scan-card .scan-lines{transform:translateY(var(--scan-y,0px))}
+.scan-card .scan-lines path{transform:translateY(76px)}
+.scan-card[data-mode=auto] :is(.scan-window,.scan-lines){animation:profile-scan 4s ease-in-out infinite alternate}
+@keyframes profile-scan{from{transform:translateY(-76px)}to{transform:translateY(76px)}}
+.scan-card[data-mode=body] .scan-window{height:0}
+.scan-card[data-mode=full] .scan-window{y:0;height:200px;transform:none}
+.scan-card:is([data-mode=body],[data-mode=full]) .scan-lines{display:none}
+.scan-card [aria-pressed=true]{border-color:var(--highlight);box-shadow:inset 0 -2px var(--highlight)}
+.scan-card [data-scan]{margin:8px 5px 0 0}
+@media(prefers-reduced-motion:reduce){.scan-card[data-mode=auto] :is(.scan-window,.scan-lines){animation:none!important}}
 .dual-stage{position:relative;height:clamp(165px,30vw,290px);margin:12px 0;border-radius:12px;overflow:hidden;background:#202024}
 .dual-stage img{position:absolute;width:100%;height:100%;object-fit:contain;background:#202024;transition:clip-path .25s}
 .dual-stage img:first-child{object-position:18% center;clip-path:polygon(0 0,calc(var(--split,50%) + 12%) 0,calc(var(--split,50%) - 12%) 100%,0 100%)}
@@ -343,3 +350,29 @@ header{gap:10px;padding:10px clamp(14px,4vw,36px)}
  .desktop-menu i:last-of-type{transform-origin:center}
  .menu-open .desktop-menu i:last-of-type{transform:translateY(-4px)}
 }
+
+/* Separate the two profile layers and retain a solid front on the metric tiles. */
+.athlete-card{--lift:12px;background:linear-gradient(145deg,var(--soft),var(--surface))}
+.athlete-front{background:linear-gradient(110deg,var(--surface2),var(--soft));border-bottom:1px solid var(--line)}
+.athlete-card[open] .athlete-front{transform:translateY(calc(-1 * var(--lift)));box-shadow:0 8px 15px #0005}
+.athlete-card[open] p{padding-bottom:10px}
+.hard-card summary{transition:transform .24s,border-radius .24s;background:linear-gradient(135deg,var(--surface2),var(--surface))}
+.hard-card[open] summary{transform:scale(.86);border-radius:4px}
+.tile-back{line-height:1.35}
+.tile-turn{min-height:62px}
+@media(hover:hover) and (pointer:fine){
+  .hard-card:hover{transform:scale(1.025);z-index:1}
+  .tabs button:is(:hover,:focus-visible) .nav-label{
+    background:linear-gradient(105deg,var(--ink) 15%,var(--accent) 85%);background-clip:text;color:transparent;
+    filter:drop-shadow(0 1px 6px color-mix(in srgb,var(--highlight) 45%,transparent));
+  }
+}
+.nav-dock .tabs button.active::before{transform:scaleX(1)}
+.nav-dock .tabs button.active .nav-icon{color:var(--accent)}
+@media(max-width:899px){
+ .nav-dock .tabs{position:fixed;inset:auto 0 0;background:var(--surface);z-index:8;padding-bottom:env(safe-area-inset-bottom)}
+ body{padding-bottom:calc(76px + env(safe-area-inset-bottom))}
+ .nav-dock .tabs .nav-icon,.nav-dock .tabs .nav-label{display:block;margin:0 auto}
+ .nav-dock .tabs button{padding:8px 2px}
+}
+@media(prefers-reduced-motion:reduce){.hard-card:hover{transform:none}}
