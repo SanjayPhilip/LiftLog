@@ -154,9 +154,8 @@ render=function(){
   if(tab==='sessionStudio'){renderSessionStudio();return;}
   renderBeforeSessions();
   if(tab==='dashboard'){
-    $('dashboard').insertAdjacentHTML('afterbegin',pendingSessionHTML()+weeklySummaryHTML());
-    const weekMetric=$('dashboard').querySelector('.stat-card:last-child strong');
-    if(weekMetric)weekMetric.innerHTML=weeklySummary(weekStart(localDateKey())).current.sessions+'<sub>sessions</sub>';
+    $('dashboard').insertAdjacentHTML('afterbegin', pendingSessionHTML());
+    $('dashboard').insertAdjacentHTML('beforeend', weeklySummaryHTML());
   }
   if(tab==='workout')$('workout').insertAdjacentHTML('afterbegin',pendingSessionHTML());
   if(tab==='progressPage')$('progressPage').insertAdjacentHTML('afterbegin',sessionNoticeHTML()+weeklySummaryHTML());
