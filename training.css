@@ -21,3 +21,7 @@
 .schedule-grid .schedule-tile{touch-action:none;-webkit-user-select:none;user-select:none}
 .schedule-grid .schedule-tile.swap-source{opacity:.78;transform:scale(.98)!important}
 .schedule-grid .schedule-tile.swap-target{outline:3px solid var(--accent);outline-offset:2px}
+
+.progress-schedule{list-style:none;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}
+.progress-schedule li{display:grid;gap:4px;padding:10px;border:1px solid var(--line);border-radius:8px}
+.progress-schedule span{color:var(--muted)}

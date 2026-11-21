@@ -16,9 +16,18 @@ function weeklySchedule(week = weekStart(localDateKey())) {
   return base;
 }
 
-function scheduleHTML() {
+function progressScheduleHTML(week) {
+  const currentWeek = week === weekStart(localDateKey());
+  if (!currentWeek && !state.weekSchedules?.[week]) return '';
+  const days = weeklySchedule(week);
+  return `<h3>Planned schedule</h3><ul class="progress-schedule">${days.map((day, index) =>
+    `<li><strong>${scheduleWeekdays[index]}</strong><span>${day < 0 ? 'Recovery' : esc(PLAN[day].name)}</span></li>`
+  ).join('')}</ul>`;
+}
+
+function scheduleTilesHTML() {
   const today = (new Date().getDay() + 6) % 7;
-  const tiles = weeklySchedule().map((workoutId, weekday) => {
+  return weeklySchedule().map((workoutId, weekday) => {
     const rest = workoutId < 0;
     const day = PLAN[workoutId];
     const chosen = workoutId === state.day;
@@ -34,20 +43,25 @@ function scheduleHTML() {
       <span class="schedule-arrow" aria-hidden="true">${swappingDays ? '↔' : rest ? '—' : '↗'}</span>
     </button>`;
   }).join('');
-  return `<div class="section-head elevated schedule-heading">
+}
+
+function scheduleHTML() {
+  return `<div id="weeklySchedule"><div class="section-head elevated schedule-heading">
     <div><div class="eyebrow">WEEKLY SPLIT</div><h2>Your schedule<span class="wordmark-dot">.</span></h2></div>
     <button type="button" id="scheduleSwap" class="btn secondary" aria-pressed="${swappingDays}" onclick="toggleDaySwap()">${swappingDays ? 'Done swapping' : 'Swap days'}</button>
   </div>
   <p class="schedule-intro" id="scheduleStatus" role="status">${scheduleNotice || (swappingDays ? 'Drag a card onto another day, or tap two cards to swap.' : 'Drag a card to swap days, or tap a training day to open its workout.')}</p>
-  <div class="schedule-grid ${swappingDays ? 'swapping-days' : ''}">${tiles}</div>
-  <button type="button" class="text-action" onclick="switchTab('profile');openPlanEditor()">Customize plan ↗</button>`;
+  <div class="schedule-grid ${swappingDays ? 'swapping-days' : ''}">${scheduleTilesHTML()}</div>
+  <button type="button" class="text-action" onclick="switchTab('profile');openPlanEditor()">Customize plan ↗</button></div>`;
 }
 
 function toggleDaySwap() {
   swappingDays = !swappingDays;
   swapSource = null;
   scheduleNotice = '';
-  render();
+  const schedule = $('weeklySchedule');
+  schedule.outerHTML = scheduleHTML();
+  bindScheduleDrag();
   $('scheduleSwap').focus({preventScroll: true});
 }
 
@@ -67,13 +81,17 @@ function swapScheduleDays(from, to) {
   swapSource = null;
   if (days[from] === days[to]) {
     scheduleNotice = 'Both days are rest days. Choose a training day to swap.';
+    paintSwapSource();
+    $('scheduleStatus').textContent = scheduleNotice;
   } else {
     [days[from], days[to]] = [days[to], days[from]];
     state.weekSchedules = {...state.weekSchedules, [week]: {plan: JSON.stringify(PLAN), days}};
     scheduleNotice = `${scheduleWeekdays[from]} and ${scheduleWeekdays[to]} swapped for this week.`;
+    $('weeklySchedule').querySelector('.schedule-grid').innerHTML = scheduleTilesHTML();
+    $('scheduleStatus').textContent = scheduleNotice;
+    bindScheduleDrag();
     save();
   }
-  render();
   if (swappingDays) document.querySelector(`[data-schedule-day="${to}"]`).focus({preventScroll: true});
 }
 
@@ -103,6 +121,16 @@ function bindScheduleDrag() {
   const targetAt = event => document.elementFromPoint(event.clientX, event.clientY)?.closest('[data-schedule-day]');
   tiles.forEach(tile => {
     let drag = null;
+    let target = null;
+    let frame = null;
+    const clearDrag = () => {
+      if (frame !== null) cancelAnimationFrame(frame);
+      frame = null;
+      drag = null;
+      target?.classList.remove('swap-target');
+      target = null;
+      paintSwapSource();
+    };
     tile.querySelector('.schedule-grip').addEventListener('click', event => {
       if (!swappingDays) event.stopPropagation();
     });
@@ -116,35 +144,41 @@ function bindScheduleDrag() {
       if (!drag.moved) {
         if (Math.hypot(event.clientX - drag.x, event.clientY - drag.y) <= 8) return;
         drag.moved = true;
+        tile.classList.add('swap-source');
         if (!tile.hasPointerCapture(event.pointerId)) tile.setPointerCapture(event.pointerId);
       }
-      tile.classList.add('swap-source');
-      const target = targetAt(event);
-      tiles.forEach(candidate => candidate.classList.toggle('swap-target', candidate === target && candidate !== tile));
+      drag.event = event;
+      if (frame !== null) return;
+      frame = requestAnimationFrame(() => {
+        frame = null;
+        const hovered = targetAt(drag.event);
+        const next = hovered === tile ? null : hovered;
+        if (next === target) return;
+        target?.classList.remove('swap-target');
+        next?.classList.add('swap-target');
+        target = next;
+      });
     });
     tile.addEventListener('pointerup', event => {
       if (!drag || event.pointerId !== drag.id) return;
       const moved = drag.moved;
-      drag = null;
+      const dropTarget = moved ? targetAt(event) : null;
+      clearDrag();
       if (!moved) return;
-      tile.classList.remove('swap-source');
-      const target = targetAt(event);
       scheduleIgnoreClick = true;
       setTimeout(() => { scheduleIgnoreClick = false; }, 0);
-      tiles.forEach(candidate => candidate.classList.remove('swap-target'));
-      if (target && target !== tile) {
-        swapScheduleDays(Number(tile.dataset.scheduleDay), Number(target.dataset.scheduleDay));
-      } else {
-        paintSwapSource();
+      if (dropTarget && dropTarget !== tile) {
+        swapScheduleDays(Number(tile.dataset.scheduleDay), Number(dropTarget.dataset.scheduleDay));
       }
     });
     tile.addEventListener('pointerleave', event => {
       if (drag && event.pointerType === 'mouse' && !drag.moved) drag = null;
     });
-    tile.addEventListener('pointercancel', () => {
-      drag = null;
-      tiles.forEach(candidate => candidate.classList.remove('swap-target'));
-      paintSwapSource();
+    tile.addEventListener('lostpointercapture', event => {
+      if (drag?.id === event.pointerId) clearDrag();
+    });
+    tile.addEventListener('pointercancel', event => {
+      if (drag?.id === event.pointerId) clearDrag();
     });
   });
 }
