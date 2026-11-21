@@ -10,11 +10,11 @@ function swapStudioExercise(index){
 }
 function swapWorkoutExercise(index){
   if(state.repeatedWorkout&&!confirm('Replace the existing repeated draft with this workout?'))return;
-  const original=PLAN[state.day].items[index],name=prompt('Replacement exercise name (this workout only)',original[0]);
+  const original=activeWorkoutPlan().items[index],name=prompt('Replacement exercise name (this workout only)',original[0]);
   if(name===null||!name.trim()||name.trim()===original[0])return;
   if(name.trim().length>100)return alert('Keep exercise names under 100 characters.');
   if(!confirm('Swap this exercise and clear its entered sets? Your routine will stay the same.'))return;
-  const d=structuredClone(draft()),snapshot=structuredClone(PLAN[state.day]);
+  const d=structuredClone(draft()),snapshot=structuredClone(activeWorkoutPlan());
   snapshot.items[index][0]=name.trim();
   d.sets[index]=Array.from({length:Math.max(1,original[1])},()=>({weight:'',reps:''}));
   snapshot.items.forEach(([,count],i)=>{d.sets[i]??=Array.from({length:count},()=>({weight:'',reps:''}));});
